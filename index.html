@@ -1,0 +1,3715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>TerraAI — Autonomous Carbon Intelligence Prototype</title>
+  
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Supabase Official JS SDK CDN (v2) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    /* ==========================================================================
+       TerraAI Design System & Master Palette (Vanilla CSS)
+       ========================================================================== */
+    :root {
+      --color-primary-dark: #0E382B;
+      --color-primary: #14532D;
+      --color-primary-light: #166534;
+      --color-emerald-accent: #15803D;
+      --color-leaf-green: #22C55E;
+      --color-bright-green: #10B981;
+      --color-mint-soft: #ECFDF5;
+      --color-mint-badge: #D1FAE5;
+      --color-mint-border: #A7F3D0;
+      
+      --color-slate-bg: #0B1320;
+      --color-card-bg: #FFFFFF;
+      --color-screen-bg: #F8FAF9;
+      
+      --color-text-main: #0F172A;
+      --color-text-secondary: #475569;
+      --color-text-muted: #64748B;
+      --color-text-subtle: #94A3B8;
+      
+      --color-border: #E2E8F0;
+      --color-border-focus: #15803D;
+      
+      --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+      --shadow-device: 0 25px 50px -12px rgba(0, 0, 0, 0.55), 0 0 0 12px #1E293B;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--color-slate-bg);
+      color: var(--color-text-main);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+
+    /* Master Workspace */
+    .terra-workspace {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background: radial-gradient(circle at 50% 20%, #16263B 0%, #0B1320 100%);
+    }
+
+    /* Top Switcher Toolbar */
+    .screen-switcher-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 10px 24px;
+      color: #FFFFFF;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon-wrap {
+      width: 28px;
+      height: 28px;
+      background: rgba(16, 185, 129, 0.15);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .brand-name {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: #FFFFFF;
+    }
+
+    .brand-tag {
+      font-size: 10px;
+      font-weight: 600;
+      color: #34D399;
+      background: rgba(16, 185, 129, 0.15);
+      padding: 2px 8px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .controls-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .selector-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 4px 10px;
+      border-radius: 8px;
+    }
+
+    .selector-label {
+      font-size: 11px;
+      color: #94A3B8;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .screen-dropdown {
+      background: transparent;
+      border: none;
+      color: #FFFFFF;
+      font-size: 13px;
+      font-family: inherit;
+      font-weight: 500;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .screen-dropdown option {
+      background: #0F172A;
+      color: #FFFFFF;
+    }
+
+    .device-toggle-pills {
+      display: flex;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 3px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .device-pill-btn {
+      background: transparent;
+      border: none;
+      color: #94A3B8;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .device-pill-btn.active {
+      background: #10B981;
+      color: #FFFFFF;
+    }
+
+    .sb-status-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+
+    .sb-status-connected {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34D399;
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    .sb-status-demo {
+      background: rgba(245, 158, 11, 0.2);
+      color: #FBBF24;
+      border-color: rgba(245, 158, 11, 0.4);
+    }
+
+    .temp-id-pill {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      background: rgba(255, 255, 255, 0.08);
+      color: #94A3B8;
+      padding: 4px 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Main Canvas Stage */
+    .terra-canvas-stage {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    /* iPhone Frame */
+    .phone-device-wrapper {
+      perspective: 1000px;
+    }
+
+    .iphone-outer-chassis {
+      width: 400px;
+      height: 844px;
+      background: #111827;
+      border-radius: 54px;
+      padding: 12px;
+      box-shadow: var(--shadow-device);
+      position: relative;
+      border: 4px solid #374151;
+    }
+
+    .iphone-screen {
+      width: 100%;
+      height: 100%;
+      background: var(--color-screen-bg);
+      border-radius: 44px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .phone-scroll-body {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .iphone-home-indicator {
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      position: absolute;
+      bottom: 4px;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      pointer-events: none;
+    }
+
+    .home-bar {
+      width: 134px;
+      height: 5px;
+      background: #0F172A;
+      opacity: 0.3;
+      border-radius: 100px;
+    }
+
+    /* Fullscreen View */
+    .fullscreen-container {
+      width: 100%;
+      max-width: 900px;
+      height: 844px;
+      background: var(--color-screen-bg);
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .fullscreen-content-body {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    /* Phone Status Bar */
+    .phone-status-bar {
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #0F172A;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: transparent;
+      user-select: none;
+    }
+
+    .phone-status-bar.dark-status {
+      color: #FFFFFF;
+    }
+
+    .status-left {
+      font-weight: 700;
+    }
+
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Screen Flow Pipeline Strip at Bottom */
+    .bottom-screen-flow-strip {
+      background: rgba(15, 23, 42, 0.95);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 12px 24px;
+      color: #FFFFFF;
+      backdrop-filter: blur(12px);
+    }
+
+    .flow-strip-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .flow-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #34D399;
+      letter-spacing: 0.5px;
+    }
+
+    .flow-hint {
+      font-size: 11px;
+      color: #94A3B8;
+    }
+
+    .flow-chips-carousel {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .flow-chips-carousel::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .flow-chips-carousel::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+
+    .flow-chip-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 5px 12px;
+      border-radius: 20px;
+      color: #CBD5E1;
+      font-size: 12px;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .flow-chip-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #FFFFFF;
+    }
+
+    .flow-chip-btn.active {
+      background: #10B981;
+      color: #FFFFFF;
+      border-color: #10B981;
+      font-weight: 600;
+    }
+
+    .flow-chip-num {
+      font-weight: 700;
+      font-size: 10px;
+      opacity: 0.8;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 1px 5px;
+      border-radius: 10px;
+    }
+
+    /* Screen Common Containers */
+    .screen-container {
+      padding: 16px 20px 80px 20px;
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+      background: #F8FAF9;
+    }
+
+    .screen-container.with-bottom-nav {
+      padding-bottom: 84px;
+    }
+
+    /* Bottom Navigation Bar */
+    .bottom-nav-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: #FFFFFF;
+      border-top: 1px solid #E2E8F0;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      z-index: 45;
+      padding-bottom: 6px;
+    }
+
+    .bottom-nav-btn {
+      background: transparent;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      color: #64748B;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      padding: 6px 12px;
+      border-radius: 8px;
+      transition: all 0.15s ease;
+    }
+
+    .bottom-nav-btn.active {
+      color: #14532D;
+      font-weight: 700;
+    }
+
+    .bottom-nav-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Form Styles */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .form-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1E293B;
+    }
+
+    .form-input, .form-select {
+      width: 100%;
+      padding: 11px 14px;
+      background: #FFFFFF;
+      border: 1.5px solid #CBD5E1;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      color: #0F172A;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .form-input:focus, .form-select:focus {
+      border-color: #14532D;
+      box-shadow: 0 0 0 3px rgba(20, 83, 45, 0.12);
+    }
+
+    .form-input::placeholder {
+      color: #94A3B8;
+    }
+
+    .btn-primary-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 13px 20px;
+      background: #14532D;
+      color: #FFFFFF;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      border-radius: 100px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(20, 83, 45, 0.25);
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary-pill:hover {
+      background: #0E382B;
+      transform: translateY(-1px);
+    }
+
+    .btn-primary-pill:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px 20px;
+      background: #FFFFFF;
+      color: #14532D;
+      font-size: 14px;
+      font-weight: 600;
+      border: 1.5px solid #CBD5E1;
+      border-radius: 100px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary-pill:hover {
+      border-color: #14532D;
+      background: #F0FDF4;
+    }
+
+    /* Header Nav */
+    .wizard-top-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .wizard-back-btn {
+      background: transparent;
+      border: none;
+      font-size: 20px;
+      color: #334155;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      padding: 4px;
+    }
+
+    .step-counter {
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748B;
+      background: #E2E8F0;
+      padding: 3px 10px;
+      border-radius: 12px;
+    }
+
+    .wizard-header {
+      margin-bottom: 18px;
+    }
+
+    .wizard-title {
+      font-size: 21px;
+      font-weight: 700;
+      color: #0F172A;
+      letter-spacing: -0.4px;
+      margin-bottom: 4px;
+    }
+
+    .wizard-subtitle {
+      font-size: 13px;
+      color: #64748B;
+      line-height: 1.4;
+    }
+
+    .wizard-footer-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 24px;
+      padding-top: 14px;
+      border-top: 1px solid #E2E8F0;
+    }
+
+    .btn-wizard-back {
+      background: transparent;
+      border: none;
+      color: #64748B;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 8px 12px;
+    }
+
+    .btn-wizard-next {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #14532D;
+      color: #FFFFFF;
+      padding: 10px 22px;
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* Screen 1: Splash Screen */
+    .splash-screen {
+      background: linear-gradient(180deg, #FFFFFF 0%, #F0FDF4 100%);
+      align-items: center;
+      justify-content: space-between;
+      padding: 40px 24px 30px 24px;
+    }
+
+    .brand-logo-hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .leaf-icon-container {
+      width: 68px;
+      height: 68px;
+      background: #DCFCE7;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      box-shadow: 0 8px 20px rgba(34, 197, 94, 0.2);
+    }
+
+    .splash-title {
+      font-size: 32px;
+      font-weight: 800;
+      color: #0E382B;
+      letter-spacing: -0.5px;
+    }
+
+    .splash-subtitle {
+      font-size: 14px;
+      color: #15803D;
+      font-weight: 600;
+    }
+
+    .splash-hero-art {
+      width: 100%;
+      height: 220px;
+      background: radial-gradient(circle at 50% 50%, #ECFDF5 0%, #D1FAE5 100%);
+      border-radius: 24px;
+      border: 1px solid #A7F3D0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-metric-pill {
+      background: #FFFFFF;
+      border: 1px solid #A7F3D0;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #14532D;
+      margin-top: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .splash-temp-box {
+      width: 100%;
+      text-align: center;
+      margin-top: 12px;
+    }
+
+    .temp-id-badge-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #475569;
+      background: rgba(0, 0, 0, 0.04);
+      padding: 5px 12px;
+      border-radius: 20px;
+    }
+
+    .btn-text-link {
+      background: transparent;
+      border: none;
+      color: #14532D;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 6px;
+      display: block;
+      width: 100%;
+    }
+
+    /* Screen 2: Auth Screen */
+    .auth-toggle-pill {
+      display: flex;
+      background: #E2E8F0;
+      padding: 3px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+    }
+
+    .toggle-tab {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      background: transparent;
+      font-size: 13px;
+      font-weight: 600;
+      color: #64748B;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .toggle-tab.active {
+      background: #FFFFFF;
+      color: #0F172A;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .auth-alert {
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .alert-error {
+      background: #FEE2E2;
+      color: #991B1B;
+      border: 1px solid #FECACA;
+    }
+
+    .alert-success {
+      background: #DCFCE7;
+      color: #166534;
+      border: 1px solid #BBF7D0;
+    }
+
+    .alert-info {
+      background: #E0F2FE;
+      color: #075985;
+      border: 1px solid #BAE6FD;
+    }
+
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      margin: 18px 0;
+      gap: 12px;
+    }
+
+    .divider-line {
+      flex: 1;
+      height: 1px;
+      background: #E2E8F0;
+    }
+
+    .divider-text {
+      font-size: 12px;
+      color: #94A3B8;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .btn-google-auth {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 11px;
+      background: #FFFFFF;
+      border: 1.5px solid #CBD5E1;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+
+    .btn-google-auth:hover {
+      background: #F8FAFC;
+      border-color: #94A3B8;
+    }
+
+    .temp-id-access-card {
+      margin-top: 14px;
+      background: #F0FDF4;
+      border: 1.5px dashed #86EFAC;
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .temp-chip {
+      font-size: 11px;
+      font-weight: 700;
+      color: #15803D;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .temp-id-code {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: #0F172A;
+      margin-top: 2px;
+    }
+
+    .btn-temp-access {
+      background: #14532D;
+      color: #FFFFFF;
+      border: none;
+      padding: 7px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    /* Domain Chooser Cards */
+    .domain-choice-card {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 14px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .domain-choice-card:hover {
+      border-color: #14532D;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .domain-choice-icon-wrap {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 20px;
+    }
+
+    .domain-choice-info {
+      flex: 1;
+    }
+
+    .domain-choice-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2px;
+    }
+
+    .domain-choice-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0F172A;
+    }
+
+    .domain-choice-scope {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 8px;
+      background: #F1F5F9;
+      color: #475569;
+    }
+
+    .domain-choice-desc {
+      font-size: 12px;
+      color: #64748B;
+      line-height: 1.3;
+    }
+
+    .domain-choice-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 4px;
+      font-size: 11px;
+    }
+
+    .domain-status-pill {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 6px;
+    }
+
+    .status-entered {
+      background: #DCFCE7;
+      color: #166534;
+    }
+
+    .status-pending {
+      background: #FEF3C7;
+      color: #92400E;
+    }
+
+    /* Screen 8: Home / Dashboard */
+    .app-header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .app-logo-area {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .app-header-brand {
+      font-size: 18px;
+      font-weight: 800;
+      color: #0E382B;
+    }
+
+    .greeting-block {
+      margin-bottom: 14px;
+    }
+
+    .greeting-label {
+      font-size: 12px;
+      color: #64748B;
+      font-weight: 500;
+    }
+
+    .greeting-company {
+      font-size: 22px;
+      font-weight: 800;
+      color: #0F172A;
+      letter-spacing: -0.4px;
+    }
+
+    .greeting-location {
+      font-size: 12px;
+      color: #64748B;
+    }
+
+    /* Carbon Hero Card */
+    .carbon-hero-card {
+      background: linear-gradient(135deg, #14532D 0%, #064E3B 100%);
+      color: #FFFFFF;
+      border-radius: 20px;
+      padding: 18px 20px;
+      box-shadow: 0 10px 25px -5px rgba(20, 83, 45, 0.4);
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .carbon-hero-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .carbon-hero-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #A7F3D0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .reduction-pill {
+      background: rgba(34, 197, 94, 0.25);
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      color: #4ADE80;
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .carbon-value-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .carbon-main-number {
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1;
+      font-family: var(--font-family);
+    }
+
+    .carbon-unit-text {
+      font-size: 18px;
+      font-weight: 600;
+      color: #A7F3D0;
+    }
+
+    .scopes-breakdown-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .scope-box {
+      text-align: center;
+    }
+
+    .scope-val {
+      font-size: 15px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .scope-lbl {
+      font-size: 10px;
+      color: #86EFAC;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    /* Quick Action Cards */
+    .quick-actions-section {
+      margin-bottom: 16px;
+    }
+
+    .section-heading {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0F172A;
+      margin-bottom: 10px;
+    }
+
+    .quick-actions-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .quick-action-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .quick-action-card:hover {
+      border-color: #14532D;
+      transform: translateY(-1px);
+    }
+
+    .quick-action-icon-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 18px;
+    }
+
+    .icon-bg-mint {
+      background: #ECFDF5;
+      color: #15803D;
+    }
+
+    .icon-bg-lightgreen {
+      background: #DCFCE7;
+      color: #166534;
+    }
+
+    .quick-action-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0F172A;
+    }
+
+    .quick-action-sub {
+      font-size: 11px;
+      color: #64748B;
+    }
+
+    /* Teaser & ROI Banners */
+    .smart-bill-teaser-card, .roi-highlight-banner {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .smart-bill-teaser-card:hover, .roi-highlight-banner:hover {
+      border-color: #10B981;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+    }
+
+    .smart-bill-tag, .roi-tag {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: #15803D;
+      background: #DCFCE7;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 4px;
+    }
+
+    .smart-bill-title, .roi-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0F172A;
+    }
+
+    .smart-bill-sub, .roi-sub {
+      font-size: 11px;
+      color: #64748B;
+    }
+
+    /* Screen 9: Results & Donut Chart */
+    .results-top-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .results-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #0F172A;
+    }
+
+    .screen-subtitle-muted {
+      font-size: 12px;
+      color: #64748B;
+    }
+
+    .results-subtabs {
+      display: flex;
+      gap: 6px;
+      background: #E2E8F0;
+      padding: 3px;
+      border-radius: 10px;
+      margin-bottom: 14px;
+    }
+
+    .subtab-pill {
+      flex: 1;
+      padding: 6px 10px;
+      border: none;
+      background: transparent;
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748B;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .subtab-pill.active {
+      background: #FFFFFF;
+      color: #0F172A;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Donut Chart Card */
+    .donut-chart-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .donut-visual-container {
+      width: 140px;
+      height: 140px;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .donut-center-val {
+      font-size: 20px;
+      font-weight: 800;
+      fill: #0F172A;
+      font-family: var(--font-family);
+    }
+
+    .donut-center-sub {
+      font-size: 11px;
+      fill: #64748B;
+      font-weight: 600;
+    }
+
+    .donut-legend-list {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .legend-item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 6px;
+      transition: background 0.15s ease;
+    }
+
+    .legend-item-row:hover, .legend-item-row.highlighted-row {
+      background: #F1F5F9;
+    }
+
+    .legend-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      margin-right: 6px;
+      flex-shrink: 0;
+    }
+
+    .legend-name {
+      color: #334155;
+      font-weight: 500;
+      flex: 1;
+    }
+
+    .legend-pct {
+      font-weight: 700;
+      color: #0F172A;
+      font-family: var(--font-mono);
+    }
+
+    /* Explainer Card */
+    .easy-explainer-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+
+    .explainer-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .explainer-tag-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .explainer-scope-label {
+      font-size: 10px;
+      color: #64748B;
+      font-weight: 600;
+    }
+
+    .explainer-meaning-text {
+      font-size: 13px;
+      color: #334155;
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+
+    .explainer-tip-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      font-size: 12px;
+      color: #15803D;
+      background: #F0FDF4;
+      padding: 8px 10px;
+      border-radius: 8px;
+    }
+
+    /* Breakdown list with progress track */
+    .breakdown-card-item {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+
+    .breakdown-item-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .breakdown-item-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .breakdown-item-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0F172A;
+    }
+
+    .breakdown-item-scope {
+      font-size: 10px;
+      color: #64748B;
+      background: #F1F5F9;
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+
+    .breakdown-progress-track {
+      width: 100%;
+      height: 7px;
+      background: #F1F5F9;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+
+    .breakdown-progress-fill {
+      height: 100%;
+      border-radius: 10px;
+      transition: width 0.3s ease;
+    }
+
+    .breakdown-item-sub {
+      font-size: 11px;
+      color: #64748B;
+    }
+
+    /* Screen 10: Reduction Actions */
+    .actions-filter-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .filter-tab-pill {
+      padding: 5px 12px;
+      border: 1px solid #CBD5E1;
+      background: #FFFFFF;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .filter-tab-pill.active {
+      background: #14532D;
+      color: #FFFFFF;
+      border-color: #14532D;
+    }
+
+    .action-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 10px;
+      transition: all 0.2s ease;
+    }
+
+    .action-card.applied {
+      border-color: #10B981;
+      background: #F0FDF4;
+    }
+
+    .action-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .action-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0F172A;
+    }
+
+    .action-badges-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+      flex-wrap: wrap;
+    }
+
+    .badge-co2 {
+      font-size: 11px;
+      font-weight: 700;
+      color: #15803D;
+      background: #DCFCE7;
+      padding: 2px 7px;
+      border-radius: 6px;
+    }
+
+    .badge-saving {
+      font-size: 11px;
+      font-weight: 700;
+      color: #0369A1;
+      background: #E0F2FE;
+      padding: 2px 7px;
+      border-radius: 6px;
+    }
+
+    .badge-payback {
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748B;
+      background: #F1F5F9;
+      padding: 2px 7px;
+      border-radius: 6px;
+    }
+
+    .btn-toggle-action {
+      background: #FFFFFF;
+      border: 1.5px solid #CBD5E1;
+      color: #334155;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .btn-toggle-action.applied {
+      background: #14532D;
+      color: #FFFFFF;
+      border-color: #14532D;
+    }
+
+    /* Screen 11: What-If Simulator */
+    .whatif-slider-box {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .slider-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .slider-target-val {
+      font-size: 20px;
+      font-weight: 800;
+      color: #14532D;
+      font-family: var(--font-mono);
+    }
+
+    .whatif-range-slider {
+      width: 100%;
+      height: 8px;
+      border-radius: 5px;
+      background: #E2E8F0;
+      outline: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+    }
+
+    .whatif-range-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #14532D;
+      cursor: pointer;
+      border: 3px solid #FFFFFF;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .whatif-results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .whatif-metric-card {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .whatif-metric-val {
+      font-size: 18px;
+      font-weight: 800;
+      color: #0F172A;
+      margin-bottom: 2px;
+    }
+
+    .whatif-metric-label {
+      font-size: 11px;
+      color: #64748B;
+      font-weight: 500;
+    }
+
+    /* Modal Backdrop */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(6px);
+      z-index: 200;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .modal-sheet {
+      width: 100%;
+      max-width: 440px;
+      background: #FFFFFF;
+      border-radius: 24px 24px 0 0;
+      padding: 20px 24px 30px 24px;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.3);
+      animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .modal-sheet-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .modal-sheet-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #0F172A;
+    }
+
+    .btn-modal-close {
+      background: #F1F5F9;
+      border: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748B;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    /* Utility */
+    .text-emerald { color: #10B981; }
+    .text-forest { color: #14532D; }
+    .text-muted { color: #64748B; }
+    .font-mono { font-family: var(--font-mono); }
+    .empty-state-box {
+      text-align: center;
+      padding: 24px 16px;
+      background: #F1F5F9;
+      border-radius: 14px;
+      color: #64748B;
+      font-size: 13px;
+      margin: 12px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="terra-workspace">
+    <!-- Top Screen Switcher Toolbar -->
+    <header class="screen-switcher-bar">
+      <div class="brand-group">
+        <div class="brand-icon-wrap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2">
+            <path d="M12 2L9.5 8.5L3 11l6.5 2.5L12 20l2.5-6.5L21 11l-6.5-2.5L12 2z"/>
+          </svg>
+        </div>
+        <span class="brand-name">TerraAI</span>
+        <span class="brand-tag">Carbon Intelligence</span>
+      </div>
+
+      <div class="controls-group">
+        <div class="selector-box">
+          <span class="selector-label">Screen:</span>
+          <select id="screen-select" class="screen-dropdown" onchange="window.terra.goToScreen(Number(this.value))">
+            <option value="1">1. Welcome / Splash</option>
+            <option value="2">2. Supabase Authentication</option>
+            <option value="3">3. Business Details</option>
+            <option value="0">Domain Selector (Ask User First)</option>
+            <option value="4">4. Electricity Domain</option>
+            <option value="5">5. Fuel Domain</option>
+            <option value="15">Transport & Logistics Domain</option>
+            <option value="6">6. Raw Materials Domain</option>
+            <option value="16">Waste Generation Domain</option>
+            <option value="7">7. Review & Calculate</option>
+            <option value="8">8. Home / Dashboard</option>
+            <option value="9">9. Results - Analysis & Donut</option>
+            <option value="10">10. Actions - Decarbonization Plan</option>
+            <option value="11">11. ROI & What-If Simulation</option>
+            <option value="12">12. Reports (Excel & PDF)</option>
+            <option value="13">13. Profile & Account</option>
+            <option value="14">14. More / Statutory Standards</option>
+          </select>
+        </div>
+
+        <div class="device-toggle-pills">
+          <button id="btn-mode-phone" class="device-pill-btn active" onclick="window.terra.setDeviceMode('phone')">Phone</button>
+          <button id="btn-mode-fullscreen" class="device-pill-btn" onclick="window.terra.setDeviceMode('fullscreen')">Fullscreen</button>
+        </div>
+
+        <button id="sb-status-badge" class="sb-status-pill sb-status-demo" onclick="window.terra.openConfigModal()">
+          <span id="sb-status-text">Supabase (Demo Mode)</span>
+        </button>
+
+        <span id="header-temp-id" class="temp-id-pill">TEMP-MSME-8492</span>
+      </div>
+    </header>
+
+    <!-- Main Preview Canvas -->
+    <main class="terra-canvas-stage">
+      <!-- Phone Mode Wrapper -->
+      <div id="phone-wrapper" class="phone-device-wrapper">
+        <div class="iphone-outer-chassis">
+          <div class="iphone-screen">
+            <div id="phone-status-bar" class="phone-status-bar">
+              <span class="status-left" id="status-clock">09:41</span>
+              <div class="status-icons">
+                <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor">
+                  <path d="M1 9h2V2H1v7zm4 0h2V0H5v9zm4 0h2V4H9v5zm4 0h2V6h-2v3z"/>
+                </svg>
+                <svg width="15" height="11" viewBox="0 0 16 12" fill="currentColor">
+                  <path d="M8 2.5a8.7 8.7 0 015.6 2.1l1.4-1.4A10.7 10.7 0 008 .5 10.7 10.7 0 001 3.2L2.4 4.6A8.7 8.7 0 018 2.5zm0 4a4.8 4.8 0 013.1 1.1l1.4-1.4A6.8 6.8 0 008 4.5 6.8 6.8 0 003.5 6.2L4.9 7.6A4.8 4.8 0 018 6.5zm0 4a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/>
+                </svg>
+                <svg width="22" height="11" viewBox="0 0 24 12" fill="currentColor">
+                  <rect x="1" y="1" width="19" height="10" rx="3" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                  <rect x="3" y="3" width="13" height="6" rx="1.5" fill="currentColor"/>
+                  <path d="M22 4.5v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+              </div>
+            </div>
+
+            <div id="screen-mount" class="phone-scroll-body">
+              <!-- Active screen HTML mounted dynamically -->
+            </div>
+
+            <!-- Home indicator bar -->
+            <div class="iphone-home-indicator">
+              <div class="home-bar"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fullscreen Mode Wrapper -->
+      <div id="fullscreen-wrapper" class="fullscreen-container" style="display: none;">
+        <div id="fullscreen-mount" class="fullscreen-content-body">
+          <!-- Active screen HTML mounted dynamically -->
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Screen Flow Pipeline Strip -->
+    <aside class="bottom-screen-flow-strip" aria-label="Screen Flow Navigation">
+      <div class="flow-strip-header">
+        <span class="flow-label">SCREEN FLOW PIPELINE:</span>
+        <span class="flow-hint">Click any stage to test screen with real calculation data</span>
+      </div>
+      <div class="flow-chips-carousel" id="flow-chips-carousel">
+        <!-- Rendered dynamically -->
+      </div>
+    </aside>
+  </div>
+
+  <!-- Supabase Configuration Modal -->
+  <div id="config-modal" class="modal-backdrop" style="display: none;" onclick="window.terra.closeConfigModal()">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-sheet-header">
+        <h2 class="modal-sheet-title">Connect Supabase Cloud</h2>
+        <button type="button" class="btn-modal-close" onclick="window.terra.closeConfigModal()">✕</button>
+      </div>
+      <p class="text-muted" style="font-size: 12px; margin-bottom: 12px;">
+        Provide your Supabase Project URL and Anon Public Key (from Supabase Dashboard &rarr; Project Settings &rarr; API) to authenticate real users and sync profiles:
+      </p>
+      <form onsubmit="window.terra.saveSupabaseConfig(event)">
+        <div class="form-group">
+          <label class="form-label" for="sb-url">Supabase Project URL</label>
+          <input type="text" id="sb-url" class="form-input" placeholder="https://xyzcompany.supabase.co" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="sb-key">Anon Public API Key</label>
+          <input type="password" id="sb-key" class="form-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..." required />
+        </div>
+        <button type="submit" class="btn-primary-pill" style="margin-top: 8px;">Save & Connect Supabase</button>
+        <button type="button" class="btn-secondary-pill" style="margin-top: 8px;" onclick="window.terra.resetSupabaseDemo()">Use Built-in Local Mode</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Smart Bill OCR & Text Auto-Classifier Modal -->
+  <div id="smart-bill-modal" class="modal-backdrop" style="display: none;" onclick="window.terra.closeSmartBillModal()">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-sheet-header">
+        <h2 class="modal-sheet-title">Smart Bill Auto-Classifier</h2>
+        <button type="button" class="btn-modal-close" onclick="window.terra.closeSmartBillModal()">✕</button>
+      </div>
+      <p class="text-muted" style="font-size: 12px; margin-bottom: 12px;">
+        Paste any electricity statement, fuel challan, transport waybill, or material invoice description. The engine extracts consumption and applies official statutory factors:
+      </p>
+      <div style="display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap;">
+        <button type="button" class="filter-tab-pill" onclick="window.terra.fillBillPreset('elec')">Electricity (12,000 kWh)</button>
+        <button type="button" class="filter-tab-pill" onclick="window.terra.fillBillPreset('fuel')">Diesel (450 Litres)</button>
+        <button type="button" class="filter-tab-pill" onclick="window.terra.fillBillPreset('transport')">Delivery LCV (3,200 km)</button>
+        <button type="button" class="filter-tab-pill" onclick="window.terra.fillBillPreset('steel')">Raw Steel (4,000 kg)</button>
+      </div>
+      <div class="form-group">
+        <textarea id="smart-bill-input" class="form-input" rows="3" placeholder="e.g. BESCOM bill for shopfloor units consumed: 12,000 kWh for spinning mill..." style="resize: vertical;"></textarea>
+      </div>
+      <button type="button" class="btn-primary-pill" onclick="window.terra.classifyBill()">Auto-Classify & Apply to Footprint</button>
+      <div id="bill-analysis-result" style="margin-top: 12px; display: none;"></div>
+    </div>
+  </div>
+
+  <!-- APPLICATION JAVASCRIPT LOGIC -->
+  <script>
+    (function() {
+      'use strict';
+
+      // ------------------------------------------------------------------------
+      // 1. STATUTORY EMISSION FACTORS (CEA FY 2024-25 v21.0 & DEFRA/IPCC)
+      // ------------------------------------------------------------------------
+      const STATUTORY_FACTORS = {
+        electricity: { factor: 0.7100, unit: 'kg CO2e/kWh', name: 'CEA India Grid (FY 2024-25 v21.0)', scope: 'Scope 2' },
+        fuels: {
+          'Diesel': { factor: 2.6870, unit: 'kg CO2e/L', scope: 'Scope 1' },
+          'Petrol': { factor: 2.3140, unit: 'kg CO2e/L', scope: 'Scope 1' },
+          'LPG': { factor: 1.5120, unit: 'kg CO2e/kg', scope: 'Scope 1' },
+          'CNG': { factor: 2.7500, unit: 'kg CO2e/kg', scope: 'Scope 1' }
+        },
+        transport: {
+          'Light Commercial Vehicle': { factor: 0.2850, unit: 'kg CO2e/km', scope: 'Scope 3' },
+          'Heavy Freight Diesel Truck': { factor: 0.8920, unit: 'kg CO2e/km', scope: 'Scope 3' }
+        },
+        materials: {
+          'Steel': { factor: 1.8200, unit: 'kg CO2e/kg', scope: 'Scope 3' },
+          'Cotton yarn / textiles': { factor: 3.5400, unit: 'kg CO2e/kg', scope: 'Scope 3' },
+          'Aluminium': { factor: 8.2400, unit: 'kg CO2e/kg', scope: 'Scope 3' },
+          'Cement': { factor: 0.7600, unit: 'kg CO2e/kg', scope: 'Scope 3' }
+        },
+        waste: {
+          'General Landfill Waste': { factor: 0.5800, unit: 'kg CO2e/kg', scope: 'Scope 3' },
+          'Food / Organic Composted': { factor: 0.1000, unit: 'kg CO2e/kg', scope: 'Scope 3' },
+          'Recycled scrap': { factor: 0.0500, unit: 'kg CO2e/kg', scope: 'Scope 3' }
+        }
+      };
+
+      const SCREENS_LIST = [
+        { id: 1, name: '1. Splash / Welcome', group: 'Onboarding' },
+        { id: 2, name: '2. Authentication', group: 'Onboarding' },
+        { id: 3, name: '3. Business Details', group: 'Data Input' },
+        { id: 0, name: 'Domain Selector (Ask User First)', group: 'Data Input' },
+        { id: 4, name: '4. Electricity Domain', group: 'Data Input' },
+        { id: 5, name: '5. Fuel Domain', group: 'Data Input' },
+        { id: 15, name: 'Transport & Fleet', group: 'Data Input' },
+        { id: 6, name: '6. Raw Materials', group: 'Data Input' },
+        { id: 16, name: 'Waste Domain', group: 'Data Input' },
+        { id: 7, name: '7. Review & Calculate', group: 'Data Input' },
+        { id: 8, name: '8. Home / Dashboard', group: 'Main App' },
+        { id: 9, name: '9. Results - Analysis', group: 'Main App' },
+        { id: 10, name: '10. Reduction Actions Plan', group: 'Main App' },
+        { id: 11, name: '11. ROI & What-If Simulation', group: 'Main App' },
+        { id: 12, name: '12. Reports (Excel & PDF)', group: 'Main App' },
+        { id: 13, name: '13. Profile & Account', group: 'Main App' },
+        { id: 14, name: '14. More / Statutory Standards', group: 'Main App' }
+      ];
+
+      // ------------------------------------------------------------------------
+      // 2. SUPABASE CLIENT INITIALIZATION
+      // ------------------------------------------------------------------------
+      let supabaseClient = null;
+
+      function getStoredSbUrl() {
+        return localStorage.getItem('terra_supabase_url') || '';
+      }
+
+      function getStoredSbKey() {
+        return localStorage.getItem('terra_supabase_key') || '';
+      }
+
+      function isSbConfigured() {
+        const u = getStoredSbUrl();
+        const k = getStoredSbKey();
+        return Boolean(u && k && u.startsWith('http') && !u.includes('sample-project'));
+      }
+
+      function initSupabase() {
+        const u = getStoredSbUrl();
+        const k = getStoredSbKey();
+        if (window.supabase && u && k) {
+          try {
+            supabaseClient = window.supabase.createClient(u, k);
+          } catch (e) {
+            console.warn('Supabase client init error:', e);
+          }
+        }
+      }
+
+      initSupabase();
+
+      // ------------------------------------------------------------------------
+      // 3. ZERO-FAKE-DATA STATE MODEL
+      // ------------------------------------------------------------------------
+      // Initial empty state for clean new users (NO synthetic "ABC Textiles" or fake numbers)
+      function getCleanInitialState() {
+        return {
+          business: {
+            name: '',
+            industry: 'Manufacturing',
+            city: '',
+            employees: '',
+            reportingPeriod: 'FY 2025-26',
+            ownerName: '',
+            email: '',
+            phone: ''
+          },
+          electricity: {
+            amount: 0,
+            unit: 'kWh',
+            period: 'Monthly',
+            sourceType: 'Actual (from bill)',
+            billUploaded: false
+          },
+          fuels: [],
+          transport: {
+            distance_km: 0,
+            vehicle_type: 'Light Commercial Vehicle',
+            period: 'Monthly',
+            sourceType: 'Actual (from logbook)'
+          },
+          materials: [],
+          waste: [],
+          actions: [
+            { id: 'act-1', title: 'Install Rooftop Solar PV (Captive)', category: 'Electricity', priorityType: 'high', co2Reduction: 26.85, annualSaving: 300000, capex: 1206000, payback: 4.0 },
+            { id: 'act-2', title: 'Replace Standard Motors with BEE IE3/IE4', category: 'Electricity', priorityType: 'high', co2Reduction: 12.40, annualSaving: 145000, capex: 380000, payback: 2.6 },
+            { id: 'act-3', title: 'Optimize Fleet Logistics & Route Consolidation', category: 'Transport', priorityType: 'medium', co2Reduction: 6.20, annualSaving: 88000, capex: 45000, payback: 0.5 },
+            { id: 'act-4', title: 'Air Compressor Leakage Remediation Program', category: 'Electricity', priorityType: 'high', co2Reduction: 5.10, annualSaving: 62000, capex: 25000, payback: 0.4 },
+            { id: 'act-5', title: 'Switch to Low-Carbon Recycled Steel Scrap', category: 'Materials', priorityType: 'medium', co2Reduction: 15.30, annualSaving: 95000, capex: 60000, payback: 0.6 }
+          ],
+          appliedActionIds: [],
+          whatIf: {
+            category: 'Electricity',
+            reductionPct: 20
+          }
+        };
+      }
+
+      // Load state from localStorage or initialize clean
+      let appState = (function() {
+        const saved = localStorage.getItem('terra_clean_prototype_state');
+        if (saved) {
+          try {
+            return JSON.parse(saved);
+          } catch (e) {}
+        }
+        return getCleanInitialState();
+      })();
+
+      let currentScreen = 1;
+      let deviceMode = 'phone';
+      let activeBottomNav = 'home';
+      let authUser = (function() {
+        const saved = localStorage.getItem('terra_auth_user');
+        return saved ? JSON.parse(saved) : null;
+      })();
+      let tempId = localStorage.getItem('terra_temp_id') || 'TEMP-MSME-' + Math.floor(1000 + Math.random() * 9000);
+
+      function persistState() {
+        localStorage.setItem('terra_clean_prototype_state', JSON.stringify(appState));
+        localStorage.setItem('terra_temp_id', tempId);
+        if (authUser) {
+          localStorage.setItem('terra_auth_user', JSON.stringify(authUser));
+        } else {
+          localStorage.removeItem('terra_auth_user');
+        }
+      }
+
+      // ------------------------------------------------------------------------
+      // 4. DETERMINISTIC STATUTORY CALCULATION ENGINE
+      // ------------------------------------------------------------------------
+      function calculateFootprint() {
+        const mult = (p) => p === 'Monthly' ? 12 : p === 'Quarterly' ? 4 : 1;
+
+        // 1. Scope 2: Grid Electricity
+        const elecAmount = parseFloat(appState.electricity.amount || 0);
+        const elecMultiplier = mult(appState.electricity.period);
+        const annualElecKwh = elecAmount * (appState.electricity.unit === 'MWh' ? 1000 : 1) * elecMultiplier;
+        const scope2 = (annualElecKwh * STATUTORY_FACTORS.electricity.factor) / 1000;
+
+        // 2. Scope 1: Direct Fuels
+        let scope1 = 0;
+        appState.fuels.forEach(f => {
+          const qty = parseFloat(f.quantity || 0);
+          const fFactor = (STATUTORY_FACTORS.fuels[f.type] || STATUTORY_FACTORS.fuels['Diesel']).factor;
+          const annualQty = qty * mult(f.period);
+          scope1 += (annualQty * fFactor) / 1000;
+        });
+
+        // 3. Scope 3: Transport Logistics, Raw Materials & Waste
+        let scope3Transport = 0;
+        if (appState.transport && parseFloat(appState.transport.distance_km || 0) > 0) {
+          const dist = parseFloat(appState.transport.distance_km);
+          const tFactor = (STATUTORY_FACTORS.transport[appState.transport.vehicle_type] || STATUTORY_FACTORS.transport['Light Commercial Vehicle']).factor;
+          scope3Transport = (dist * mult(appState.transport.period) * tFactor) / 1000;
+        }
+
+        let scope3Materials = 0;
+        appState.materials.forEach(m => {
+          const qty = parseFloat(m.quantity || 0);
+          const mFactor = (STATUTORY_FACTORS.materials[m.type] || STATUTORY_FACTORS.materials['Steel']).factor;
+          const kg = qty * (m.unit === 'tonnes' ? 1000 : 1) * mult(m.period);
+          scope3Materials += (kg * mFactor) / 1000;
+        });
+
+        let scope3Waste = 0;
+        appState.waste.forEach(w => {
+          const qty = parseFloat(w.quantity || 0);
+          const wFactor = (STATUTORY_FACTORS.waste[w.type] || STATUTORY_FACTORS.waste['General Landfill Waste']).factor;
+          const kg = qty * (w.unit === 'tonnes' ? 1000 : 1) * mult(w.period);
+          scope3Waste += (kg * wFactor) / 1000;
+        });
+
+        const scope3 = scope3Transport + scope3Materials + scope3Waste;
+        const totalBaseline = Math.round((scope1 + scope2 + scope3) * 1000) / 1000;
+
+        // Action Reductions
+        let actionReduction = 0;
+        let actionSavings = 0;
+        appState.actions.forEach(a => {
+          if (appState.appliedActionIds.includes(a.id)) {
+            actionReduction += a.co2Reduction;
+            actionSavings += a.annualSaving;
+          }
+        });
+
+        const finalTotal = Math.max(0, Math.round((totalBaseline - actionReduction) * 1000) / 1000);
+
+        // Real Domain Breakdown (100% computed from real inputs)
+        const domains = [
+          { name: 'Electricity', category: 'electricity', tco2e: scope2, color: '#0284C7', scope: 'Scope 2', meaning: 'Grid power for factory machines, lighting & utilities' },
+          { name: 'Fuel', category: 'fuel', tco2e: scope1, color: '#F43F5E', scope: 'Scope 1', meaning: 'Diesel generators (DG sets), boiler fuel & thermal systems' },
+          { name: 'Transport', category: 'transport', tco2e: scope3Transport, color: '#3B82F6', scope: 'Scope 3', meaning: 'Outbound logistics, delivery fleet & dispatch freight' },
+          { name: 'Materials', category: 'materials', tco2e: scope3Materials, color: '#F59E0B', scope: 'Scope 3', meaning: 'Embodied carbon in purchased raw steel, textiles & parts' },
+          { name: 'Waste', category: 'waste', tco2e: scope3Waste, color: '#10B981', scope: 'Scope 3', meaning: 'Process scrap, municipal landfill & industrial waste' }
+        ];
+
+        domains.forEach(d => {
+          d.percentage = totalBaseline > 0 ? Math.round((d.tco2e / totalBaseline) * 100) : 0;
+        });
+
+        return {
+          total: finalTotal,
+          baselineTotal: totalBaseline,
+          scope1: Math.round(scope1 * 1000) / 1000,
+          scope2: Math.round(scope2 * 1000) / 1000,
+          scope3: Math.round(scope3 * 1000) / 1000,
+          domains,
+          actionReduction,
+          actionSavings,
+          annualElecKwh
+        };
+      }
+
+      function calculateWhatIf(totalFootprint, category, reductionPct) {
+        const pct = Math.max(0, Math.min(50, reductionPct)) / 100;
+        const fp = calculateFootprint();
+        const baseEmission = category === 'Electricity' ? fp.scope2 : category === 'Fuel' ? fp.scope1 : (fp.domains.find(d => d.name === 'Transport')?.tco2e || 0);
+        const co2Saved = Math.round(baseEmission * pct * 1000) / 1000;
+        const newTotal = Math.max(0, Math.round((totalFootprint - co2Saved) * 1000) / 1000);
+        
+        // Commercial tariff: ₹8.50/kWh electricity | ₹92.50/L diesel
+        let annualSaving = 0;
+        let capex = 0;
+        if (category === 'Electricity') {
+          const kwhSaved = (co2Saved * 1000) / STATUTORY_FACTORS.electricity.factor;
+          annualSaving = Math.round(kwhSaved * 8.50);
+          capex = Math.round(annualSaving * 4.0); // 4-year payback benchmark
+        } else {
+          const litresSaved = (co2Saved * 1000) / STATUTORY_FACTORS.fuels.Diesel.factor;
+          annualSaving = Math.round(litresSaved * 92.50);
+          capex = Math.round(annualSaving * 1.5);
+        }
+        const payback = annualSaving > 0 ? (capex / annualSaving).toFixed(1) : 0;
+
+        return {
+          co2Saved,
+          newTotal,
+          annualSaving,
+          capex,
+          payback
+        };
+      }
+
+      // ------------------------------------------------------------------------
+      // 5. VIEW RENDERING (ALL SCREENS WITH IDENTICAL DESIGN SYSTEM)
+      // ------------------------------------------------------------------------
+      function renderActiveScreen() {
+        const mount = deviceMode === 'phone' ? document.getElementById('screen-mount') : document.getElementById('fullscreen-mount');
+        const fp = calculateFootprint();
+        const biz = appState.business;
+
+        // Sync dropdown & status bar
+        document.getElementById('screen-select').value = String(currentScreen);
+        document.getElementById('header-temp-id').textContent = tempId;
+        const sbBadge = document.getElementById('sb-status-badge');
+        const sbText = document.getElementById('sb-status-text');
+        if (isSbConfigured()) {
+          sbBadge.className = 'sb-status-pill sb-status-connected';
+          sbText.textContent = authUser ? `Supabase: ${authUser.email}` : 'Supabase (Connected)';
+        } else {
+          sbBadge.className = 'sb-status-pill sb-status-demo';
+          sbText.textContent = authUser ? `User: ${authUser.email}` : 'Supabase (Demo Mode)';
+        }
+
+        renderFlowChips();
+
+        let html = '';
+
+        switch (currentScreen) {
+          // SCREEN 1: SPLASH / WELCOME
+          case 1:
+            html = `
+              <div class="screen-container splash-screen">
+                <div class="brand-logo-hero">
+                  <div class="leaf-icon-container">
+                    <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#15803D" stroke-width="2">
+                      <path d="M12 2L9.5 8.5L3 11l6.5 2.5L12 20l2.5-6.5L21 11l-6.5-2.5L12 2z"/>
+                    </svg>
+                  </div>
+                  <h1 class="splash-title">TerraAI</h1>
+                  <p class="splash-subtitle">Carbon Intelligence for MSMEs</p>
+                </div>
+
+                <div class="splash-hero-art">
+                  <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="#14532D" stroke-width="1.5" style="margin-bottom: 8px;">
+                    <path d="M3 21h18M5 21V7l7-4 7 4v14M9 10h1m4 0h1m-6 4h1m4 0h1M9 18h6"/>
+                  </svg>
+                  <strong style="color: #0E382B; font-size: 15px;">Statutory Indian Standards</strong>
+                  <p style="font-size: 12px; color: #166534; margin-top: 4px;">CEA India Baseline v21.0 & IPCC MSME GHG Protocol</p>
+                  <div class="stat-metric-pill">Autonomous Footprint Engine</div>
+                </div>
+
+                <div style="width: 100%;">
+                  <button type="button" class="btn-primary-pill" onclick="window.terra.goToScreen(2)">
+                    <span>Get Started</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                  </button>
+                  <div class="splash-temp-box">
+                    <div class="temp-id-badge-row">
+                      <span>Temporary ID: <strong>${tempId}</strong></span>
+                    </div>
+                    <button type="button" class="btn-text-link" onclick="window.terra.goToScreen(3)">
+                      Quick start directly with Temporary ID &rarr;
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `;
+            break;
+
+          // SCREEN 2: SUPABASE AUTHENTICATION
+          case 2:
+            html = `
+              <div class="screen-container">
+                <div class="wizard-header">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                    <h1 class="wizard-title" id="auth-title">${window.terra.authMode === 'signup' ? 'Create account' : 'Welcome back'}</h1>
+                    <button type="button" class="sb-status-pill ${isSbConfigured() ? 'sb-status-connected' : 'sb-status-demo'}" onclick="window.terra.openConfigModal()">
+                      <span>${isSbConfigured() ? 'Supabase Auth' : 'Demo Cloud'}</span>
+                    </button>
+                  </div>
+                  <p class="wizard-subtitle">
+                    ${window.terra.authMode === 'signup' ? 'Sign up to register your business on Supabase with zero fake data' : 'Sign in to access your business carbon records'}
+                  </p>
+                </div>
+
+                <div class="auth-toggle-pill">
+                  <button type="button" class="toggle-tab ${window.terra.authTab === 'email' ? 'active' : ''}" onclick="window.terra.setAuthTab('email')">Email</button>
+                  <button type="button" class="toggle-tab ${window.terra.authTab === 'phone' ? 'active' : ''}" onclick="window.terra.setAuthTab('phone')">Phone OTP</button>
+                </div>
+
+                <div id="auth-message-area"></div>
+
+                ${window.terra.authTab === 'email' ? `
+                  <form onsubmit="window.terra.handleEmailAuth(event)">
+                    ${window.terra.authMode === 'signup' ? `
+                      <div class="form-group">
+                        <label class="form-label" for="inp-auth-name">Representative Full Name</label>
+                        <input id="inp-auth-name" type="text" class="form-input" placeholder="e.g. Ramesh Patel" required />
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="inp-auth-company">Company / Enterprise Name</label>
+                        <input id="inp-auth-company" type="text" class="form-input" placeholder="e.g. Shanti Precision Forgings" required />
+                      </div>
+                    ` : ''}
+
+                    <div class="form-group">
+                      <label class="form-label" for="inp-auth-email">Email Address</label>
+                      <input id="inp-auth-email" type="email" class="form-input" placeholder="you@company.com" value="${biz.email || ''}" required />
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label" for="inp-auth-password">Password</label>
+                      <input id="inp-auth-password" type="password" class="form-input" placeholder="Enter secure password" required />
+                    </div>
+
+                    <button type="submit" id="btn-auth-submit" class="btn-primary-pill" style="margin-top: 6px;">
+                      ${window.terra.authMode === 'signup' ? 'Create Account & Begin Carbon Audit' : 'Sign In with Supabase'}
+                    </button>
+                  </form>
+                ` : `
+                  <form onsubmit="window.terra.handlePhoneAuth(event)">
+                    <div class="form-group">
+                      <label class="form-label" for="inp-auth-phone">Mobile Phone Number</label>
+                      <input id="inp-auth-phone" type="tel" class="form-input" placeholder="+91 98765 43210" value="${biz.phone || ''}" required />
+                    </div>
+                    ${window.terra.phoneOtpSent ? `
+                      <div class="form-group">
+                        <label class="form-label" for="inp-auth-otp">6-Digit Verification SMS Code</label>
+                        <input id="inp-auth-otp" type="text" maxlength="6" class="form-input" placeholder="123456" required />
+                      </div>
+                    ` : ''}
+                    <button type="submit" class="btn-primary-pill" style="margin-top: 6px;">
+                      ${window.terra.phoneOtpSent ? 'Verify Code & Sign In' : 'Send Verification OTP'}
+                    </button>
+                  </form>
+                `}
+
+                <div class="auth-divider">
+                  <span class="divider-line"></span>
+                  <span class="divider-text">or</span>
+                  <span class="divider-line"></span>
+                </div>
+
+                <button type="button" class="btn-google-auth" onclick="window.terra.handleGoogleAuth()">
+                  <svg width="18" height="18" viewBox="0 0 18 18">
+                    <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
+                    <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z"/>
+                    <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/>
+                    <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
+                  </svg>
+                  <span>Continue with Google</span>
+                </button>
+
+                <div class="temp-id-access-card">
+                  <div>
+                    <div class="temp-chip">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                      <span>Frictionless MSME Access</span>
+                    </div>
+                    <div class="temp-id-code">ID: ${tempId}</div>
+                  </div>
+                  <button type="button" class="btn-temp-access" onclick="window.terra.goToScreen(3)">Use Temp ID &rarr;</button>
+                </div>
+
+                <div style="text-align: center; margin-top: 18px;">
+                  <span style="font-size: 13px; color: #64748B;">
+                    ${window.terra.authMode === 'signup' ? 'Already have an account?' : "Don't have an account?"}
+                  </span>
+                  <button type="button" style="background: transparent; border: none; font-size: 13px; font-weight: 700; color: #14532D; cursor: pointer; margin-left: 4px;" onclick="window.terra.toggleAuthMode()">
+                    ${window.terra.authMode === 'signup' ? 'Sign in' : 'Create account'}
+                  </button>
+                </div>
+              </div>
+            `;
+            break;
+
+          // SCREEN 3: BUSINESS DETAILS
+          case 3:
+            html = `
+              <div class="screen-container">
+                <div class="wizard-top-nav">
+                  <button type="button" class="wizard-back-btn" onclick="window.terra.goToScreen(2)">&larr;</button>
+                  <span class="step-counter">1 of 5</span>
+                </div>
+                <div class="wizard-header">
+                  <h1 class="wizard-title">Tell us about your business</h1>
+                  <p class="wizard-subtitle">This scopes your statutory carbon baseline & emission benchmark.</p>
+                </div>
+
+                <form onsubmit="window.terra.saveBusinessDetails(event)">
+                  <div class="form-group">
+                    <label class="form-label" for="inp-biz-name">Business / Enterprise Name</label>
+                    <input id="inp-biz-name" type="text" class="form-input" placeholder="e.g. Tata Ancillary Unit" value="${biz.name || ''}" required />
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="inp-biz-industry">Industry Sector</label>
+                    <select id="inp-biz-industry" class="form-select">
+                      <option ${biz.industry === 'Manufacturing' ? 'selected' : ''}>Manufacturing</option>
+                      <option ${biz.industry === 'Textiles' ? 'selected' : ''}>Textiles</option>
+                      <option ${biz.industry === 'Auto Ancillary & Components' ? 'selected' : ''}>Auto Ancillary & Components</option>
+                      <option ${biz.industry === 'Metal Fabrication' ? 'selected' : ''}>Metal Fabrication</option>
+                      <option ${biz.industry === 'Chemicals & Dyes' ? 'selected' : ''}>Chemicals & Dyes</option>
+                      <option ${biz.industry === 'Food & Beverage Processing' ? 'selected' : ''}>Food & Beverage Processing</option>
+                      <option ${biz.industry === 'Plastics & Rubber' ? 'selected' : ''}>Plastics & Rubber</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="inp-biz-city">City / Industrial Cluster</label>
+                    <input id="inp-biz-city" type="text" class="form-input" placeholder="e.g. Peenya, Bengaluru / Pithampur, Indore" value="${biz.city || ''}" required />
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="inp-biz-emp">Number of Employees</label>
+                    <input id="inp-biz-emp" type="number" class="form-input" placeholder="e.g. 45" value="${biz.employees || ''}" required />
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="inp-biz-period">Reporting Period</label>
+                    <select id="inp-biz-period" class="form-select">
+                      <option ${biz.reportingPeriod === 'FY 2025-26' ? 'selected' : ''}>FY 2025-26</option>
+                      <option ${biz.reportingPeriod === 'FY 2024-25' ? 'selected' : ''}>FY 2024-25</option>
+                      <option ${biz.reportingPeriod === 'CY 2025' ? 'selected' : ''}>CY 2025</option>
+                    </select>
+                  </div>
+
+                  <div class="wizard-footer-nav">
+                    <button type="button" class="btn-wizard-back" onclick="window.terra.goToScreen(2)">&larr; Back</button>
+                    <button type="submit" class="btn-wizard-next">Next &rarr;</button>
+                  </div>
+                </form>
+              </div>
+            `;
+            break;
+
+          // SCREEN 0: DOMAIN SELECTOR (ASK USER FIRST)
+          case 0:
+            html = `
+              <div class="screen-container">
+                <div class="wizard-top-nav">
+                  <button type="button" class="wizard-back-btn" onclick="window.terra.goToScreen(3)">&larr;</button>
+                  <span class="step-counter">Domain Chooser</span>
+                </div>
+                <div class="wizard-header">
+                  <h1 class="wizard-title">Select Operational Domain</h1>
+                  <p class="wizard-subtitle">Choose which domain you want to enter activity data for:</p>
+                </div>
+
+                <div>
+                  <button type="button" class="domain-choice-card" onclick="window.terra.goToScreen(4)">
+                    <div class="domain-choice-icon-wrap" style="background: #E0F2FE; color: #0284C7;">⚡</div>
+                    <div class="domain-choice-info">
+                      <div class="domain-choice-header">
+                        <span class="domain-choice-name">Electricity</span>
+                        <span class="domain-choice-scope">Scope 2</span>
+                      </div>
+                      <p class="domain-choice-desc">Grid power, DISCOM bills & solar captive generation</p>
+                      <div class="domain-choice-meta">
+                        <span>Current: <strong>${Number(appState.electricity.amount || 0).toLocaleString()} ${appState.electricity.unit}/mo</strong></span>
+                        <span class="domain-status-pill ${appState.electricity.amount > 0 ? 'status-entered' : 'status-pending'}">${appState.electricity.amount > 0 ? 'Entered' : 'Pending'}</span>
+                      </div>
+                    </div>
+                  </button>
+
+                  <button type="button" class="domain-choice-card" onclick="window.terra.goToScreen(5)">
+                    <div class="domain-choice-icon-wrap" style="background: #FFE4E6; color: #F43F5E;">🔥</div>
+                    <div class="domain-choice-info">
+                      <div class="domain-choice-header">
+                        <span class="domain-choice-name">Fuel</span>
+                        <span class="domain-choice-scope">Scope 1</span>
+                      </div>
+                      <p class="domain-choice-desc">Diesel gensets, boiler furnace oil, petrol & LPG</p>
+                      <div class="domain-choice-meta">
+                        <span>Current: <strong>${appState.fuels.length > 0 ? appState.fuels.map(f => f.quantity + 'L ' + f.type).join(', ') : 'None added'}</strong></span>
+                        <span class="domain-status-pill ${appState.fuels.length > 0 ? 'status-entered' : 'status-pending'}">${appState.fuels.length > 0 ? 'Entered' : 'Pending'}</span>
+                      </div>
+                    </div>
+                  </button>
+
+                  <button type="button" class="domain-choice-card" onclick="window.terra.goToScreen(15)">
+                    <div class="domain-choice-icon-wrap" style="background: #DBEAFE; color: #3B82F6;">🚚</div>
+                    <div class="domain-choice-info">
+                      <div class="domain-choice-header">
+                        <span class="domain-choice-name">Transport & Logistics</span>
+                        <span class="domain-choice-scope">Scope 3</span>
+                      </div>
+                      <p class="domain-choice-desc">Outbound delivery fleet, dispatch LCVs & freight</p>
+                      <div class="domain-choice-meta">
+                        <span>Current: <strong>${appState.transport.distance_km ? appState.transport.distance_km + ' km/mo' : 'None added'}</strong></span>
+                        <span class="domain-status-pill ${appState.transport.distance_km > 0 ? 'status-entered' : 'status-pending'}">${appState.transport.distance_km > 0 ? 'Entered' : 'Pending'}</span>
+                      </div>
+                    </div>
+                  </button>
+
+                  <button type="button" class="domain-choice-card" onclick="window.terra.goToScreen(6)">
+                    <div class="domain-choice-icon-wrap" style="background: #FEF3C7; color: #F59E0B;">📦</div>
+                    <div class="domain-choice-info">
+                      <div class="domain-choice-header">
+                        <span class="domain-choice-name">Raw Materials</span>
+                        <span class="domain-choice-scope">Scope 3</span>
+                      </div>
+                      <p class="domain-choice-desc">Purchased structural steel, cotton yarn, cement & polymers</p>
+                      <div class="domain-choice-meta">
+                        <span>Current: <strong>${appState.materials.length > 0 ? appState.materials.map(m => m.quantity + ' ' + m.unit + ' ' + m.type).join(', ') : 'None added'}</strong></span>
+                        <span class="domain-status-pill ${appState.materials.length > 0 ? 'status-entered' : 'status-pending'}">${appState.materials.length > 0 ? 'Entered' : 'Pending'}</span>
+                      </div>
+                    </div>
+                  </button>
+
+                  <button type="button" class="domain-choice-card" onclick="window.terra.goToScreen(16)">
+                    <div class="domain-choice-icon-wrap" style="background: #DCFCE7; color: #10B981;">🗑️</div>
+                    <div class="domain-choice-info">
+                      <div class="domain-choice-header">
+                        <span class="domain-choice-name">Waste Generation</span>
+                        <span class="domain-choice-scope">Scope 3</span>
+                      </div>
+                      <p class="domain-choice-desc">Factory scrap, municipal landfill & industrial disposal</p>
+                      <div class="domain-choice-meta">
+                        <span>Current: <strong>${appState.waste.length > 0 ? appState.waste.map(w => w.quantity + ' ' + w.unit).join(', ') : 'None added'}</strong></span>
+                        <span class="domain-status-pill ${appState.waste.length > 0 ? 'status-entered' : 'status-pending'}">${appState.waste.length > 0 ? 'Entered' : 'Pending'}</span>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+
+                <div style="margin-top: 14px;">
+                  <button type="button" class="btn-primary-pill" onclick="window.terra.goToScreen(7)">
+                    <span>Proceed to Review & Calculate</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                  </button>
+                </div>
+              </div>
+            `;
+            break;
+
+          // SCREEN 4: ELECTRICITY DOMAIN
+          case 4:
+            html = `
+              <div class="screen-container">
+                <div class="wizard-top-nav">
+                  <button type="button" class="wizard-back-btn" onclick="window.terra.goToScreen(0)">&larr;</button>
+                  <span class="step-counter">Electricity</span>
+                </div>
+                <div class="wizard-header">
+                  <h1 class="wizard-title">Grid Electricity (Scope 2)</h1>
+                  <p class="wizard-subtitle">Official CEA India baseline factor: <strong>0.7100 kg CO₂e/kWh</strong></p>
+                </div>
+
+                <form onsubmit="window.terra.saveElectricity(event)">
+                  <div class="form-group">
+                    <label class="form-label" for="inp-elec-amount">Electricity Consumption</label>
+                    <input id="inp-elec-amount" type="number" step="any" class="form-input" placeholder="e.g. 12000" value="${appState.electricity.amount || ''}" required />
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="form-group">
+                      <label class="form-label" for="inp-elec-unit">Unit</label>
+                      <select id="inp-elec-unit" class="form-select">
+                        <option value="kWh" ${appState.electricity.unit === 'kWh' ? 'selected' : ''}>kWh (Units)</option>
+                        <option value="MWh" ${appState.electricity.unit === 'MWh' ? 'selected' : ''}>MWh</option>
+                      </select>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label" for="inp-elec-period">Billing Period</label>
+                      <select id="inp-elec-period" class="form-select">
+                        <option value="Monthly" ${appState.electricity.period === 'Monthly' ? 'selected' : ''}>Monthly (&times;12)</option>
+                        <option value="Quarterly" ${appState.electricity.period === 'Quarterly' ? 'selected' : ''}>Quarterly (&times;4)</option>
+                        <option value="Annual" ${appState.electricity.period === 'Annual' ? 'selected' : ''}>Annual</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Data Source Verification</label>
+                    <select id="inp-elec-source" class="form-select">
+                      <option>Actual (from DISCOM bill)</option>
+                      <option>Submeter logbook</option>
+                      <option>Estimated from contract demand</option>
+                    </select>
+                  </div>
+
+                  <div class="wizard-footer-nav">
+                    <button type="button" class="btn-wizard-back" onclick="window.terra.goToScreen(0)">&larr; Domains</button>
+                    <button type="submit" class="btn-wizard-next">Save & Fuel &rarr;</button>
+                  </div>
+                </form>
+              </div>
+            `;
+            break;
+
+          // SCREEN 5: FUEL DOMAIN
+          case 5:
+            html = `
+              <div class="screen-container">
+                <div class="wizard-top-nav">
+                  <button type="button" class="wizard-back-btn" onclick="window.terra.goToScreen(0)">&larr;</button>
+                  <span class="step-counter">Fuel</span>
+                </div>
+                <div class="wizard-header">
+                  <h1 class="wizard-title">Direct Fuels (Scope 1)</h1>
+                  <p class="wizard-subtitle">Diesel DG sets (2.687 kg CO₂e/L), petrol & LPG combustion.</p>
+                </div>
+
+                <form onsubmit="window.terra.saveFuel(event)">
+                  <div class="form-group">
+                    <label class="form-label" for="inp-fuel-type">Fuel Type</label>
+                    <select id="inp-fuel-type" class="form-select">
+                      <option value="Diesel">Diesel (HSD / Genset)</option>
+                      <option value="Petrol">Petrol / Motor Spirit</option>
+                      <option value="LPG">LPG (Commercial)</option>
+                      <option value="CNG">CNG</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="inp-fuel-qty">Fuel Quantity Consumed</label>
+                    <input id="inp-fuel-qty" type="number" step="any" class="form-input" placeholder="e.g. 500" value="${appState.fuels[0]?.quantity || ''}" required />
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="inp-fuel-period">Consumption Period</label>
+                    <select id="inp-fuel-period" class="form-select">
+                      <option value="Monthly">Monthly (&times;12)</option>
+                      <option value="Quarterly">Quarterly (&times;4)</option>
+                      <option value="Annual">Annual</option>
+                    </select>
+                  </div>
+
+                  <div class="wizard-footer-nav">
+                    <button type="button" class="btn-wizard-back" onclick="window.terra.goToScreen(0)">&larr; Domains</button>
+                    <button type="submit" class="btn-wizard-next">Save & Transport &rarr;</button>
+                  </div>
+                </form>
+              </div>
+            `;
+            break;
+
+          // SCREEN 15: TRANSPORT DOMAIN
+          case 15:
+            html = `
+              <div class="screen-container">
+                <div class="wizard-top-nav">
+                  <button type="button" class="wizard-back-btn" onclick="window.terra.goToScreen(0)">&larr;</button>
+                  <span class="step-counter">Transport</span>
+                </div>
+                <div class="wizard-header">
+                  <h1 class="wizard-title">Transport & Fleet (Scope 3)</h1>
+                  <p class="wizard-subtitle">Commercial freight: 0.285 kg CO₂e/km (LCV) / 0.892 kg CO₂e/km (Heavy Truck)</p>
+                </div>
+
+                <form onsubmit="window.terra.saveTransport(event)">
+                  <div class="form-group">
+                    <label class="form-label" for="inp-tr-dist">Distance Travelled (km)</label>
+                    <input id="inp-tr-dist" type="number" step="any" class="form-input" placeholder="e.g. 3200" value="${appState.transport.distance_km || ''}" required />
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="inp-tr-veh">Vehicle Category</label>
+                    <select id="inp-tr-veh" class="form-select">
+                      <option value="Light Commercial Vehicle" ${appState.transport.vehicle_type === 'Light Commercial Vehicle' ? 'selected' : ''}>Light Commercial Delivery Van (LCV)</option>
+                      <option value="Heavy Freight Diesel Truck" ${appState.transport.vehicle_type === 'Heavy Freight Diesel Truck' ? 'selected' : ''}>Heavy Duty Freight Diesel Truck</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="inp-tr-period">Tracking Period</label>
+                    <select id="inp-tr-period" class="form-select">
+                      <option value="Monthly">Monthly (&times;12)</option>
+                      <option value="Quarterly">Quarterly (&times;4)</option>
+                      <option value="Annual">Annual</option>
+                    </select>
+                  </div>
+
+                  <div class="wizard-footer-nav">
+                    <button type="button" class="btn-wizard-back" onclick="window.terra.goToScreen(0)">&larr; Domains</button>
+                    <button type="submit" class="btn-wizard-next">Save & Materials &rarr;</button>
+                  </div>
+                </form>
+              </div>
+            `;
+            break;
+
+          // SCREEN 6: MATERIALS DOMAIN
+          case 6:
+            html = `
+              <div class="screen-container">
+                <div class="wizard-top-nav">
+                  <button type="button" class="wizard-back-btn" onclick="window.terra.goToScreen(0)">&larr;</button>
+                  <span class="step-counter">Materials</span>
+                </div>
+                <div class="wizard-header">
+                  <h1 class="wizard-title">Raw Materials (Scope 3)</h1>
+                  <p class="wizard-subtitle">Embodied carbon: Steel (1.82 kg/kg), Textiles (3.54 kg/kg), Cement (0.76 kg/kg)</p>
+                </div>
+
+                <form onsubmit="window.terra.saveMaterials(event)">
+                  <div class="form-group">
+                    <label class="form-label" for="inp-mat-type">Material Type</label>
+                    <select id="inp-mat-type" class="form-select">
+                      <option value="Steel">Structural & Sheet Steel</option>
+                      <option value="Cotton yarn / textiles">Cotton Yarn & Woven Textiles</option>
+                      <option value="Aluminium">Virgin & Extruded Aluminium</option>
+                      <option value="Cement">OPC/PPC Cement</option>
+                    </select>
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
+                    <div class="form-group">
+                      <label class="form-label" for="inp-mat-qty">Quantity</label>
+                      <input id="inp-mat-qty" type="number" step="any" class="form-input" placeholder="e.g. 4000" value="${appState.materials[0]?.quantity || ''}" required />
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="inp-mat-unit">Unit</label>
+                      <select id="inp-mat-unit" class="form-select">
+                        <option value="kg">kg</option>
+                        <option value="tonnes">Tonnes</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="inp-mat-period">Procurement Period</label>
+                    <select id="inp-mat-period" class="form-select">
+                      <option value="Monthly">Monthly (&times;12)</option>
+                      <option value="Quarterly">Quarterly (&times;4)</option>
+                      <option value="Annual">Annual</option>
+                    </select>
+                  </div>
+
+                  <div class="wizard-footer-nav">
+                    <button type="button" class="btn-wizard-back" onclick="window.terra.goToScreen(0)">&larr; Domains</button>
+                    <button type="submit" class="btn-wizard-next">Save & Waste &rarr;</button>
+                  </div>
+                </form>
+              </div>
+            `;
+            break;
+
+          // SCREEN 16: WASTE DOMAIN
+          case 16:
+            html = `
+              <div class="screen-container">
+                <div class="wizard-top-nav">
+                  <button type="button" class="wizard-back-btn" onclick="window.terra.goToScreen(0)">&larr;</button>
+                  <span class="step-counter">Waste</span>
+                </div>
+                <div class="wizard-header">
+                  <h1 class="wizard-title">Waste Generation (Scope 3)</h1>
+                  <p class="wizard-subtitle">Central Pollution Control Board (CPCB) statutory factors.</p>
+                </div>
+
+                <form onsubmit="window.terra.saveWaste(event)">
+                  <div class="form-group">
+                    <label class="form-label" for="inp-waste-type">Waste Category</label>
+                    <select id="inp-waste-type" class="form-select">
+                      <option value="General Landfill Waste">General Landfill Waste (0.58 kg/kg)</option>
+                      <option value="Food / Organic Composted">Food / Organic Composted (0.10 kg/kg)</option>
+                      <option value="Recycled scrap">Recycled Scrap / Metal Offset (0.05 kg/kg)</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="inp-waste-qty">Quantity (kg)</label>
+                    <input id="inp-waste-qty" type="number" step="any" class="form-input" placeholder="e.g. 250" value="${appState.waste[0]?.quantity || ''}" required />
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="inp-waste-period">Period</label>
+                    <select id="inp-waste-period" class="form-select">
+                      <option value="Monthly">Monthly (&times;12)</option>
+                      <option value="Quarterly">Quarterly (&times;4)</option>
+                      <option value="Annual">Annual</option>
+                    </select>
+                  </div>
+
+                  <div class="wizard-footer-nav">
+                    <button type="button" class="btn-wizard-back" onclick="window.terra.goToScreen(0)">&larr; Domains</button>
+                    <button type="submit" class="btn-wizard-next">Review &rarr;</button>
+                  </div>
+                </form>
+              </div>
+            `;
+            break;
+
+          // SCREEN 7: REVIEW & CALCULATE
+          case 7:
+            html = `
+              <div class="screen-container">
+                <div class="wizard-top-nav">
+                  <button type="button" class="wizard-back-btn" onclick="window.terra.goToScreen(0)">&larr;</button>
+                  <span class="step-counter">5 of 5</span>
+                </div>
+                <div class="wizard-header">
+                  <h1 class="wizard-title">Review your information</h1>
+                  <p class="wizard-subtitle">Verify user inputs before calculating official footprint.</p>
+                </div>
+
+                <div>
+                  <div class="breakdown-card-item">
+                    <div class="breakdown-item-top">
+                      <div class="breakdown-item-title-wrap">
+                        <span class="breakdown-item-name">Facility: ${biz.name || 'Not configured'}</span>
+                      </div>
+                      <button type="button" style="border: none; background: transparent; color: #14532D; font-size: 12px; font-weight: 700; cursor: pointer;" onclick="window.terra.goToScreen(3)">Edit</button>
+                    </div>
+                    <div class="breakdown-item-sub">${biz.industry} • ${biz.city || 'City pending'} • ${biz.reportingPeriod}</div>
+                  </div>
+
+                  <div class="breakdown-card-item">
+                    <div class="breakdown-item-top">
+                      <div class="breakdown-item-title-wrap">
+                        <span class="breakdown-item-name">Electricity: ${Number(appState.electricity.amount || 0).toLocaleString()} ${appState.electricity.unit}</span>
+                      </div>
+                      <button type="button" style="border: none; background: transparent; color: #14532D; font-size: 12px; font-weight: 700; cursor: pointer;" onclick="window.terra.goToScreen(4)">Edit</button>
+                    </div>
+                    <div class="breakdown-item-sub">${appState.electricity.period} • Scope 2: <strong>${fp.scope2} tCO₂e</strong></div>
+                  </div>
+
+                  <div class="breakdown-card-item">
+                    <div class="breakdown-item-top">
+                      <div class="breakdown-item-title-wrap">
+                        <span class="breakdown-item-name">Fuel: ${appState.fuels.length > 0 ? appState.fuels.map(f => f.quantity + 'L ' + f.type).join(', ') : 'None added'}</span>
+                      </div>
+                      <button type="button" style="border: none; background: transparent; color: #14532D; font-size: 12px; font-weight: 700; cursor: pointer;" onclick="window.terra.goToScreen(5)">Edit</button>
+                    </div>
+                    <div class="breakdown-item-sub">Direct Combustion • Scope 1: <strong>${fp.scope1} tCO₂e</strong></div>
+                  </div>
+
+                  <div class="breakdown-card-item">
+                    <div class="breakdown-item-top">
+                      <div class="breakdown-item-title-wrap">
+                        <span class="breakdown-item-name">Transport: ${appState.transport.distance_km ? appState.transport.distance_km + ' km' : 'None'}</span>
+                      </div>
+                      <button type="button" style="border: none; background: transparent; color: #14532D; font-size: 12px; font-weight: 700; cursor: pointer;" onclick="window.terra.goToScreen(15)">Edit</button>
+                    </div>
+                    <div class="breakdown-item-sub">${appState.transport.vehicle_type}</div>
+                  </div>
+
+                  <div class="breakdown-card-item">
+                    <div class="breakdown-item-top">
+                      <div class="breakdown-item-title-wrap">
+                        <span class="breakdown-item-name">Materials & Waste: ${appState.materials.length + appState.waste.length} items logged</span>
+                      </div>
+                      <button type="button" style="border: none; background: transparent; color: #14532D; font-size: 12px; font-weight: 700; cursor: pointer;" onclick="window.terra.goToScreen(6)">Edit</button>
+                    </div>
+                    <div class="breakdown-item-sub">Scope 3 Total: <strong>${fp.scope3} tCO₂e</strong></div>
+                  </div>
+                </div>
+
+                <div style="margin-top: 18px;">
+                  <button type="button" class="btn-primary-pill" onclick="window.terra.goToScreen(8)">
+                    <span>Calculate Footprint &rarr;</span>
+                  </button>
+                  <button type="button" class="btn-secondary-pill" style="margin-top: 8px;" onclick="window.terra.loadDemoDataset()">
+                    Load Sample MSME Dataset (Demo)
+                  </button>
+                </div>
+              </div>
+            `;
+            break;
+
+          // SCREEN 8: HOME / DASHBOARD
+          case 8:
+            html = `
+              <div class="screen-container with-bottom-nav">
+                <div class="app-header-bar">
+                  <div class="app-logo-area">
+                    <div class="brand-icon-wrap">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2">
+                        <path d="M12 2L9.5 8.5L3 11l6.5 2.5L12 20l2.5-6.5L21 11l-6.5-2.5L12 2z"/>
+                      </svg>
+                    </div>
+                    <span class="app-header-brand">TerraAI</span>
+                  </div>
+                  <div style="font-size: 11px; font-family: var(--font-mono); color: #64748B;">
+                    ${tempId}
+                  </div>
+                </div>
+
+                <div class="greeting-block">
+                  <p class="greeting-label">Good morning,</p>
+                  <h1 class="greeting-company">${biz.name || (authUser ? authUser.email.split('@')[0] : 'Your MSME Enterprise')}</h1>
+                  <p class="greeting-location">${biz.city || 'Location not specified'}</p>
+                </div>
+
+                <!-- Total Carbon Hero Card -->
+                <div class="carbon-hero-card">
+                  <div class="carbon-hero-top">
+                    <span class="carbon-hero-title">Total Carbon Footprint</span>
+                    <div class="reduction-pill">
+                      <span>${fp.total > 0 ? (appState.appliedActionIds.length > 0 ? '- ' + fp.actionReduction.toFixed(1) + ' t' : '100% Calculated') : 'Clean Session'}</span>
+                    </div>
+                  </div>
+
+                  <div class="carbon-value-row">
+                    <span class="carbon-main-number">${fp.total.toFixed(1)}</span>
+                    <span class="carbon-unit-text">tCO₂e</span>
+                    <span style="font-size: 12px; color: #86EFAC;">/ year</span>
+                  </div>
+
+                  <div class="scopes-breakdown-grid">
+                    <div class="scope-box">
+                      <div class="scope-val">${fp.scope1.toFixed(1)}</div>
+                      <div class="scope-lbl">Scope 1</div>
+                    </div>
+                    <div class="scope-box">
+                      <div class="scope-val">${fp.scope2.toFixed(1)}</div>
+                      <div class="scope-lbl">Scope 2</div>
+                    </div>
+                    <div class="scope-box">
+                      <div class="scope-val">${fp.scope3.toFixed(1)}</div>
+                      <div class="scope-lbl">Scope 3</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions-section">
+                  <h2 class="section-heading">Quick Actions</h2>
+                  <div class="quick-actions-grid">
+                    <button type="button" class="quick-action-card" onclick="window.terra.goToScreen(0)">
+                      <div class="quick-action-icon-circle icon-bg-mint">✏️</div>
+                      <div>
+                        <div class="quick-action-title">Update Data</div>
+                        <div class="quick-action-sub">Edit activity data</div>
+                      </div>
+                    </button>
+                    <button type="button" class="quick-action-card" onclick="window.terra.goToScreen(10)">
+                      <div class="quick-action-icon-circle icon-bg-lightgreen">🎯</div>
+                      <div>
+                        <div class="quick-action-title">View Actions</div>
+                        <div class="quick-action-sub">5 recommendations</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Smart Bill Teaser -->
+                <div class="smart-bill-teaser-card" onclick="window.terra.openSmartBillModal()">
+                  <div>
+                    <span class="smart-bill-tag">SMART BILL ANALYZER</span>
+                    <div class="smart-bill-title">Auto-Classify Any Bill or Challan</div>
+                    <div class="smart-bill-sub">Paste invoice text to automatically compute statutory emissions</div>
+                  </div>
+                  <span style="color: #10B981; font-weight: 700;">&rarr;</span>
+                </div>
+
+                <!-- What-If Simulation Banner -->
+                <div class="roi-highlight-banner" onclick="window.terra.goToScreen(11)">
+                  <div>
+                    <span class="roi-tag">ROI SIMULATION</span>
+                    <div class="roi-title">Explore What-If Scenarios</div>
+                    <div class="roi-sub">
+                      Target: <strong>20% clean power</strong> &bull; Cut ~${(fp.scope2 * 0.20).toFixed(1)} tCO₂e/yr
+                    </div>
+                  </div>
+                  <span style="color: #10B981; font-weight: 700;">&rarr;</span>
+                </div>
+
+                ${renderBottomNav('home')}
+              </div>
+            `;
+            break;
+
+          // SCREEN 9: RESULTS - ANALYSIS & DONUT
+          case 9:
+            const currentSeg = window.terra.selectedSegment || fp.domains[0];
+            const circumference = 2 * Math.PI * 52;
+            let accOffset = 0;
+
+            html = `
+              <div class="screen-container with-bottom-nav">
+                <div class="results-top-header">
+                  <div>
+                    <h1 class="results-title">Results</h1>
+                    <p class="screen-subtitle-muted">Deterministic breakdown based on user inputs</p>
+                  </div>
+                </div>
+
+                <div class="results-subtabs">
+                  <button type="button" class="subtab-pill ${window.terra.resultsTab === 'overview' ? 'active' : ''}" onclick="window.terra.setResultsTab('overview')">Overview</button>
+                  <button type="button" class="subtab-pill ${window.terra.resultsTab === 'breakdown' ? 'active' : ''}" onclick="window.terra.setResultsTab('breakdown')">Breakdown</button>
+                  <button type="button" class="subtab-pill ${window.terra.resultsTab === 'factors' ? 'active' : ''}" onclick="window.terra.setResultsTab('factors')">Statutory Factors</button>
+                </div>
+
+                ${window.terra.resultsTab === 'overview' ? `
+                  <div class="donut-chart-card">
+                    <div class="donut-visual-container">
+                      <svg width="140" height="140" viewBox="0 0 140 140">
+                        <g transform="rotate(-90 70 70)">
+                          ${fp.total > 0 ? fp.domains.map(d => {
+                            const segDash = (d.percentage / 100) * circumference;
+                            const strokeDasharray = `${segDash} ${circumference}`;
+                            const strokeDashoffset = -accOffset;
+                            accOffset += segDash;
+                            return `
+                              <circle cx="70" cy="70" r="52" fill="transparent"
+                                stroke="${d.color}" stroke-width="${currentSeg.name === d.name ? '18' : '14'}"
+                                stroke-dasharray="${strokeDasharray}" stroke-dashoffset="${strokeDashoffset}"
+                                style="cursor: pointer; transition: stroke-width 0.2s;"
+                                onclick="window.terra.selectSegment('${d.name}')" />
+                            `;
+                          }).join('') : `
+                            <circle cx="70" cy="70" r="52" fill="transparent" stroke="#E2E8F0" stroke-width="14" />
+                          `}
+                        </g>
+                        <text x="70" y="66" text-anchor="middle" class="donut-center-val">
+                          ${fp.total > 0 ? (currentSeg ? currentSeg.percentage + '%' : fp.total.toFixed(1)) : '0.0'}
+                        </text>
+                        <text x="70" y="82" text-anchor="middle" class="donut-center-sub">
+                          ${fp.total > 0 ? (currentSeg ? currentSeg.name : 'tCO₂e') : 'tCO₂e'}
+                        </text>
+                      </svg>
+                    </div>
+
+                    <div class="donut-legend-list">
+                      ${fp.domains.map(d => `
+                        <div class="legend-item-row ${currentSeg.name === d.name ? 'highlighted-row' : ''}" onclick="window.terra.selectSegment('${d.name}')">
+                          <div style="display: flex; align-items: center;">
+                            <div class="legend-indicator" style="background-color: ${d.color};"></div>
+                            <span class="legend-name">${d.name}</span>
+                          </div>
+                          <span class="legend-pct">${d.percentage}%</span>
+                        </div>
+                      `).join('')}
+                    </div>
+                  </div>
+
+                  <div class="easy-explainer-card">
+                    <div class="explainer-card-header">
+                      <span class="explainer-tag-badge" style="background: ${currentSeg.color}20; color: ${currentSeg.color};">
+                        ${currentSeg.name} &bull; ${currentSeg.percentage}% (${currentSeg.tco2e.toFixed(1)} tCO₂e)
+                      </span>
+                      <span class="explainer-scope-label">${currentSeg.scope}</span>
+                    </div>
+                    <p class="explainer-meaning-text">${currentSeg.meaning}</p>
+                    <div class="explainer-tip-row">
+                      <span><strong>Statutory Guidance:</strong> ${currentSeg.name === 'Electricity' ? 'Rooftop solar PV cuts up to 35% of Scope 2 with standard CEA net-metering.' : currentSeg.name === 'Fuel' ? 'Optimal DG loading (70-80%) cuts diesel consumption by 12%.' : 'Engaging Tier-1 vendors with certified GHG declarations reduces Scope 3.'}</span>
+                    </div>
+                  </div>
+                ` : window.terra.resultsTab === 'breakdown' ? `
+                  <div>
+                    ${fp.domains.map(d => `
+                      <div class="breakdown-card-item">
+                        <div class="breakdown-item-top">
+                          <div class="breakdown-item-title-wrap">
+                            <div class="legend-indicator" style="background-color: ${d.color};"></div>
+                            <span class="breakdown-item-name">${d.name}</span>
+                            <span class="breakdown-item-scope">${d.scope}</span>
+                          </div>
+                          <div>
+                            <strong>${d.tco2e.toFixed(1)} tCO₂e</strong>
+                            <span style="font-size: 11px; color: #64748B;"> (${d.percentage}%)</span>
+                          </div>
+                        </div>
+                        <div class="breakdown-progress-track">
+                          <div class="breakdown-progress-fill" style="width: ${d.percentage}%; background-color: ${d.color};"></div>
+                        </div>
+                        <div class="breakdown-item-sub">${d.meaning}</div>
+                      </div>
+                    `).join('')}
+                  </div>
+                ` : `
+                  <div class="easy-explainer-card">
+                    <strong style="color: #0F172A; display: block; margin-bottom: 8px;">Official Standards Utilized:</strong>
+                    <ul style="font-size: 12px; color: #475569; padding-left: 18px; line-height: 1.6;">
+                      <li><strong>CEA CO₂ Baseline v21.0:</strong> 0.7100 kg CO₂e/kWh for Indian national grid power.</li>
+                      <li><strong>DEFRA MSME 2024 / IPCC:</strong> Diesel (2.687 kg/L), Petrol (2.314 kg/L).</li>
+                      <li><strong>ARAI Logistics Standards:</strong> LCV Freight (0.285 kg/km).</li>
+                      <li><strong>WorldSteel Association:</strong> Finished structural steel (1.82 kg/kg).</li>
+                      <li><strong>CPCB India:</strong> Industrial & municipal landfill waste (0.58 kg/kg).</li>
+                    </ul>
+                  </div>
+                `}
+
+                ${renderBottomNav('results')}
+              </div>
+            `;
+            break;
+
+          // SCREEN 10: ACTIONS - REDUCTION ROADMAP
+          case 10:
+            html = `
+              <div class="screen-container with-bottom-nav">
+                <div class="wizard-header">
+                  <h1 class="wizard-title">Decarbonization Roadmap</h1>
+                  <p class="wizard-subtitle">Apply MSME clean energy actions to reduce total footprint.</p>
+                </div>
+
+                <div class="actions-filter-tabs">
+                  <button type="button" class="filter-tab-pill ${window.terra.actionFilter === 'all' ? 'active' : ''}" onclick="window.terra.setActionFilter('all')">All Actions</button>
+                  <button type="button" class="filter-tab-pill ${window.terra.actionFilter === 'applied' ? 'active' : ''}" onclick="window.terra.setActionFilter('applied')">Applied (${appState.appliedActionIds.length})</button>
+                </div>
+
+                <div>
+                  ${appState.actions.map(act => {
+                    const isApplied = appState.appliedActionIds.includes(act.id);
+                    if (window.terra.actionFilter === 'applied' && !isApplied) return '';
+                    return `
+                      <div class="action-card ${isApplied ? 'applied' : ''}">
+                        <div class="action-card-header">
+                          <div>
+                            <div class="action-title">${act.title}</div>
+                            <div class="action-badges-row">
+                              <span class="badge-co2">&minus;${act.co2Reduction} tCO₂e</span>
+                              <span class="badge-saving">&plus;₹${act.annualSaving.toLocaleString()}/yr</span>
+                              <span class="badge-payback">Payback: ${act.payback} yrs</span>
+                            </div>
+                          </div>
+                          <button type="button" class="btn-toggle-action ${isApplied ? 'applied' : ''}" onclick="window.terra.toggleAction('${act.id}')">
+                            ${isApplied ? 'Applied ✓' : 'Apply'}
+                          </button>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+
+                ${renderBottomNav('results')}
+              </div>
+            `;
+            break;
+
+          // SCREEN 11: ROI & WHAT-IF SIMULATION
+          case 11:
+            const wi = calculateWhatIf(fp.baselineTotal || fp.total, appState.whatIf.category, appState.whatIf.reductionPct);
+            html = `
+              <div class="screen-container with-bottom-nav">
+                <div class="wizard-header">
+                  <h1 class="wizard-title">ROI & What-If Simulation</h1>
+                  <p class="wizard-subtitle">Simulate clean energy payback & emissions reduction.</p>
+                </div>
+
+                <div class="whatif-slider-box">
+                  <div class="slider-header">
+                    <div>
+                      <strong style="font-size: 14px; color: #0F172A;">Target Reduction</strong>
+                      <div style="font-size: 11px; color: #64748B;">Category: ${appState.whatIf.category}</div>
+                    </div>
+                    <span class="slider-target-val">${appState.whatIf.reductionPct}%</span>
+                  </div>
+
+                  <input type="range" min="5" max="50" step="5" class="whatif-range-slider" value="${appState.whatIf.reductionPct}" oninput="window.terra.setWhatIfPct(this.value)" />
+
+                  <div class="whatif-results-grid">
+                    <div class="whatif-metric-card">
+                      <div class="whatif-metric-val" style="color: #15803D;">&minus;${wi.co2Saved.toFixed(1)} t</div>
+                      <div class="whatif-metric-label">CO₂ Abated / year</div>
+                    </div>
+                    <div class="whatif-metric-card">
+                      <div class="whatif-metric-val" style="color: #0284C7;">${wi.newTotal.toFixed(1)} t</div>
+                      <div class="whatif-metric-label">Target Footprint</div>
+                    </div>
+                    <div class="whatif-metric-card">
+                      <div class="whatif-metric-val" style="color: #10B981;">₹${wi.annualSaving.toLocaleString()}</div>
+                      <div class="whatif-metric-label">Annual Cost Savings</div>
+                    </div>
+                    <div class="whatif-metric-card">
+                      <div class="whatif-metric-val" style="color: #64748B;">${wi.payback} yrs</div>
+                      <div class="whatif-metric-label">Estimated Payback</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="easy-explainer-card">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                    <strong style="font-size: 13px; color: #0F172A;">Simulation Model Notes:</strong>
+                    <span style="font-size: 11px; color: #15803D; font-weight: 700;">Deterministic</span>
+                  </div>
+                  <p style="font-size: 12px; color: #475569; line-height: 1.4;">
+                    Computed using commercial utility tariffs of <strong>₹8.50 per kWh</strong> for grid power and <strong>₹92.50 per Litre</strong> for industrial diesel. Capex estimations reflect average rooftop solar and IE3 motor turn-key vendor quotations across Indian MSME clusters.
+                  </p>
+                </div>
+
+                ${renderBottomNav('whatif')}
+              </div>
+            `;
+            break;
+
+          // SCREEN 12: REPORTS (EXCEL & PDF)
+          case 12:
+            html = `
+              <div class="screen-container with-bottom-nav">
+                <div class="wizard-header">
+                  <h1 class="wizard-title">Reports & Compliance</h1>
+                  <p class="wizard-subtitle">Export official statutory carbon audit records.</p>
+                </div>
+
+                <div class="carbon-hero-card" style="padding: 14px 16px; margin-bottom: 12px;">
+                  <div style="font-size: 12px; color: #A7F3D0; font-weight: 600;">CERTIFIED AUDIT SUMMARY</div>
+                  <div style="font-size: 18px; font-weight: 800; color: #FFFFFF; margin: 4px 0;">${biz.name || 'MSME Enterprise'}</div>
+                  <div style="font-size: 12px; color: #86EFAC;">Net Annual Emissions: <strong>${fp.total.toFixed(2)} tCO₂e</strong> (${biz.reportingPeriod})</div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+                  <button type="button" class="btn-primary-pill" onclick="window.terra.downloadCsvReport()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                    <span>Download Excel Carbon Ledger (.CSV)</span>
+                  </button>
+                  <button type="button" class="btn-secondary-pill" onclick="window.terra.printAuditReport()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
+                    <span>Generate ESG Carbon Audit (Print / PDF)</span>
+                  </button>
+                </div>
+
+                <div class="breakdown-card-item">
+                  <div style="font-size: 13px; font-weight: 700; color: #0F172A; margin-bottom: 6px;">Ledger Line Items</div>
+                  <table style="width: 100%; font-size: 11px; border-collapse: collapse; text-align: left;">
+                    <thead>
+                      <tr style="border-bottom: 1px solid #E2E8F0; color: #64748B;">
+                        <th style="padding: 4px 0;">Domain</th>
+                        <th style="padding: 4px 0;">Standard</th>
+                        <th style="padding: 4px 0; text-align: right;">Emissions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr style="border-bottom: 1px solid #F1F5F9;">
+                        <td style="padding: 6px 0;">Scope 2 Electricity</td>
+                        <td style="padding: 6px 0;">CEA v21.0</td>
+                        <td style="padding: 6px 0; text-align: right; font-weight: 700;">${fp.scope2} tCO₂e</td>
+                      </tr>
+                      <tr style="border-bottom: 1px solid #F1F5F9;">
+                        <td style="padding: 6px 0;">Scope 1 Fuels</td>
+                        <td style="padding: 6px 0;">DEFRA / IPCC</td>
+                        <td style="padding: 6px 0; text-align: right; font-weight: 700;">${fp.scope1} tCO₂e</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 6px 0;">Scope 3 Value Chain</td>
+                        <td style="padding: 6px 0;">GHG Protocol</td>
+                        <td style="padding: 6px 0; text-align: right; font-weight: 700;">${fp.scope3} tCO₂e</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                ${renderBottomNav('reports')}
+              </div>
+            `;
+            break;
+
+          // SCREEN 13: PROFILE & ACCOUNT
+          case 13:
+            const userEmail = authUser?.email || authUser?.phone || (biz.email || 'Guest Session');
+            const userName = authUser?.user_metadata?.full_name || biz.ownerName || (biz.name || 'MSME User');
+            html = `
+              <div class="screen-container with-bottom-nav">
+                <div class="wizard-header">
+                  <h1 class="wizard-title">Profile & Supabase Sync</h1>
+                  <p class="wizard-subtitle">Manage authenticated identity & database connection.</p>
+                </div>
+
+                <div class="easy-explainer-card">
+                  <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                    <div style="width: 44px; height: 44px; border-radius: 50%; background: #DCFCE7; color: #166534; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800;">
+                      ${userName.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <div style="font-size: 15px; font-weight: 700; color: #0F172A;">${userName}</div>
+                      <div style="font-size: 12px; color: #64748B;">${userEmail}</div>
+                    </div>
+                  </div>
+
+                  <div style="font-size: 12px; background: #F8FAFC; padding: 8px 10px; border-radius: 8px; margin-bottom: 8px;">
+                    <div>Facility: <strong>${biz.name || 'Not configured'}</strong></div>
+                    <div>Location: <strong>${biz.city || 'Not specified'}</strong></div>
+                    <div>Auth Status: <strong style="color: ${authUser ? '#15803D' : '#D97706'};">${authUser ? 'Authenticated User (Supabase)' : 'Guest Session ID'}</strong></div>
+                  </div>
+
+                  ${authUser ? `
+                    <button type="button" class="btn-secondary-pill" onclick="window.terra.signOut()">
+                      Sign Out from Supabase
+                    </button>
+                  ` : `
+                    <button type="button" class="btn-primary-pill" onclick="window.terra.goToScreen(2)">
+                      Sign In / Link to Supabase Account
+                    </button>
+                  `}
+                </div>
+
+                <div class="breakdown-card-item">
+                  <div style="font-size: 13px; font-weight: 700; color: #0F172A; margin-bottom: 4px;">Supabase Cloud Integration</div>
+                  <p style="font-size: 12px; color: #64748B; margin-bottom: 8px;">
+                    ${isSbConfigured() ? 'Connected to live Supabase project. All user entries sync to PostgreSQL profiles & sessions tables.' : 'Running in local zero-setup demo mode with automatic localStorage persistence.'}
+                  </p>
+                  <button type="button" class="btn-secondary-pill" onclick="window.terra.openConfigModal()">
+                    ${isSbConfigured() ? 'Manage Supabase Keys' : 'Configure Custom Supabase Keys'}
+                  </button>
+                </div>
+
+                ${renderBottomNav('profile')}
+              </div>
+            `;
+            break;
+
+          // SCREEN 14: MORE & STATUTORY STANDARDS
+          case 14:
+            html = `
+              <div class="screen-container with-bottom-nav">
+                <div class="wizard-header">
+                  <h1 class="wizard-title">Statutory Knowledge Base</h1>
+                  <p class="wizard-subtitle">Official Indian and international GHG standards.</p>
+                </div>
+
+                <div class="breakdown-card-item">
+                  <div style="font-size: 13px; font-weight: 700; color: #0F172A;">Central Electricity Authority (CEA) v21.0</div>
+                  <p style="font-size: 12px; color: #64748B; margin: 4px 0;">Official Government of India baseline emission rate: <strong>0.7100 kg CO₂e/kWh</strong> (FY 2024-25 weighted average including renewables and interstate transfers).</p>
+                </div>
+
+                <div class="breakdown-card-item">
+                  <div style="font-size: 13px; font-weight: 700; color: #0F172A;">IPCC / MoPNG India Petroleum Standards</div>
+                  <p style="font-size: 12px; color: #64748B; margin: 4px 0;">Direct stationary combustion: Diesel <strong>2.6870 kg CO₂e/L</strong> &bull; Petrol <strong>2.3140 kg CO₂e/L</strong> &bull; Commercial LPG <strong>1.5120 kg CO₂e/kg</strong>.</p>
+                </div>
+
+                <div class="breakdown-card-item">
+                  <div style="font-size: 13px; font-weight: 700; color: #0F172A;">No Fake Data Guarantee</div>
+                  <p style="font-size: 12px; color: #64748B; margin: 4px 0;">TerraAI strictly computes footprints from user-entered telemetry and official government standards. No synthetic personas or hardcoded mock estimates are displayed.</p>
+                </div>
+
+                ${renderBottomNav('more')}
+              </div>
+            `;
+            break;
+
+          default:
+            html = `<div class="screen-container"><p>Screen ${currentScreen} not found.</p></div>`;
+        }
+
+        mount.innerHTML = html;
+      }
+
+      function renderBottomNav(activeTab) {
+        return `
+          <nav class="bottom-nav-bar" aria-label="Bottom Navigation">
+            <button type="button" class="bottom-nav-btn ${activeTab === 'home' ? 'active' : ''}" onclick="window.terra.goToScreen(8)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              <span>Home</span>
+            </button>
+            <button type="button" class="bottom-nav-btn ${activeTab === 'results' ? 'active' : ''}" onclick="window.terra.goToScreen(9)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              <span>Results</span>
+            </button>
+            <button type="button" class="bottom-nav-btn ${activeTab === 'inputs' ? 'active' : ''}" onclick="window.terra.goToScreen(0)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <span>Inputs</span>
+            </button>
+            <button type="button" class="bottom-nav-btn ${activeTab === 'profile' ? 'active' : ''}" onclick="window.terra.goToScreen(13)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span>Profile</span>
+            </button>
+          </nav>
+        `;
+      }
+
+      function renderFlowChips() {
+        const carousel = document.getElementById('flow-chips-carousel');
+        if (!carousel) return;
+        carousel.innerHTML = SCREENS_LIST.map(s => `
+          <button type="button" class="flow-chip-btn ${currentScreen === s.id ? 'active' : ''}" onclick="window.terra.goToScreen(${s.id})">
+            <span class="flow-chip-num">${s.id}</span>
+            <span>${s.name.replace(/^\d+\.\s*/, '')}</span>
+          </button>
+        `).join('');
+      }
+
+      // ------------------------------------------------------------------------
+      // 6. WINDOW ACTIONS & EVENT HANDLERS
+      // ------------------------------------------------------------------------
+      window.terra = {
+        authMode: 'signin',
+        authTab: 'email',
+        phoneOtpSent: false,
+        resultsTab: 'overview',
+        actionFilter: 'all',
+        selectedSegment: null,
+
+        goToScreen: function(num) {
+          currentScreen = num;
+          persistState();
+          renderActiveScreen();
+        },
+
+        setDeviceMode: function(mode) {
+          deviceMode = mode;
+          const phoneWrapper = document.getElementById('phone-wrapper');
+          const fsWrapper = document.getElementById('fullscreen-wrapper');
+          const btnPhone = document.getElementById('btn-mode-phone');
+          const btnFs = document.getElementById('btn-mode-fullscreen');
+
+          if (mode === 'phone') {
+            phoneWrapper.style.display = 'block';
+            fsWrapper.style.display = 'none';
+            btnPhone.classList.add('active');
+            btnFs.classList.remove('active');
+          } else {
+            phoneWrapper.style.display = 'none';
+            fsWrapper.style.display = 'flex';
+            btnPhone.classList.remove('active');
+            btnFs.classList.add('active');
+          }
+          renderActiveScreen();
+        },
+
+        toggleAuthMode: function() {
+          this.authMode = this.authMode === 'signin' ? 'signup' : 'signin';
+          renderActiveScreen();
+        },
+
+        setAuthTab: function(tab) {
+          this.authTab = tab;
+          this.phoneOtpSent = false;
+          renderActiveScreen();
+        },
+
+        setResultsTab: function(tab) {
+          this.resultsTab = tab;
+          renderActiveScreen();
+        },
+
+        setActionFilter: function(f) {
+          this.actionFilter = f;
+          renderActiveScreen();
+        },
+
+        selectSegment: function(name) {
+          const fp = calculateFootprint();
+          this.selectedSegment = fp.domains.find(d => d.name === name) || fp.domains[0];
+          renderActiveScreen();
+        },
+
+        setWhatIfPct: function(val) {
+          appState.whatIf.reductionPct = Number(val);
+          persistState();
+          renderActiveScreen();
+        },
+
+        toggleAction: function(actionId) {
+          if (appState.appliedActionIds.includes(actionId)) {
+            appState.appliedActionIds = appState.appliedActionIds.filter(id => id !== actionId);
+          } else {
+            appState.appliedActionIds.push(actionId);
+          }
+          persistState();
+          renderActiveScreen();
+        },
+
+        // Save Form Handlers
+        saveBusinessDetails: function(e) {
+          e.preventDefault();
+          appState.business.name = document.getElementById('inp-biz-name').value.trim();
+          appState.business.industry = document.getElementById('inp-biz-industry').value;
+          appState.business.city = document.getElementById('inp-biz-city').value.trim();
+          appState.business.employees = document.getElementById('inp-biz-emp').value.trim();
+          appState.business.reportingPeriod = document.getElementById('inp-biz-period').value;
+          persistState();
+          window.terra.goToScreen(0); // Jump to Domain Chooser
+        },
+
+        saveElectricity: function(e) {
+          e.preventDefault();
+          appState.electricity.amount = parseFloat(document.getElementById('inp-elec-amount').value) || 0;
+          appState.electricity.unit = document.getElementById('inp-elec-unit').value;
+          appState.electricity.period = document.getElementById('inp-elec-period').value;
+          appState.electricity.sourceType = document.getElementById('inp-elec-source').value;
+          persistState();
+          window.terra.goToScreen(5); // Next to Fuel
+        },
+
+        saveFuel: function(e) {
+          e.preventDefault();
+          const type = document.getElementById('inp-fuel-type').value;
+          const qty = parseFloat(document.getElementById('inp-fuel-qty').value) || 0;
+          const period = document.getElementById('inp-fuel-period').value;
+          appState.fuels = [{ id: 'fuel-1', type, quantity: qty, unit: 'Litres', period }];
+          persistState();
+          window.terra.goToScreen(15); // Next to Transport
+        },
+
+        saveTransport: function(e) {
+          e.preventDefault();
+          appState.transport.distance_km = parseFloat(document.getElementById('inp-tr-dist').value) || 0;
+          appState.transport.vehicle_type = document.getElementById('inp-tr-veh').value;
+          appState.transport.period = document.getElementById('inp-tr-period').value;
+          persistState();
+          window.terra.goToScreen(6); // Next to Materials
+        },
+
+        saveMaterials: function(e) {
+          e.preventDefault();
+          const type = document.getElementById('inp-mat-type').value;
+          const qty = parseFloat(document.getElementById('inp-mat-qty').value) || 0;
+          const unit = document.getElementById('inp-mat-unit').value;
+          const period = document.getElementById('inp-mat-period').value;
+          appState.materials = [{ id: 'mat-1', type, quantity: qty, unit, period }];
+          persistState();
+          window.terra.goToScreen(16); // Next to Waste
+        },
+
+        saveWaste: function(e) {
+          e.preventDefault();
+          const type = document.getElementById('inp-waste-type').value;
+          const qty = parseFloat(document.getElementById('inp-waste-qty').value) || 0;
+          const period = document.getElementById('inp-waste-period').value;
+          appState.waste = [{ id: 'waste-1', type, quantity: qty, unit: 'kg', period }];
+          persistState();
+          window.terra.goToScreen(7); // Review & Calculate
+        },
+
+        // Supabase Auth Methods
+        handleEmailAuth: async function(e) {
+          e.preventDefault();
+          const email = document.getElementById('inp-auth-email').value.trim();
+          const password = document.getElementById('inp-auth-password').value;
+          const msgArea = document.getElementById('auth-message-area');
+
+          if (this.authMode === 'signup') {
+            const fullName = document.getElementById('inp-auth-name').value.trim();
+            const companyName = document.getElementById('inp-auth-company').value.trim();
+
+            if (supabaseClient && isSbConfigured()) {
+              try {
+                const { data, error } = await supabaseClient.auth.signUp({
+                  email,
+                  password,
+                  options: {
+                    data: { full_name: fullName, company_name: companyName, temp_id: tempId }
+                  }
+                });
+                if (error) throw error;
+                authUser = data.user;
+              } catch (err) {
+                msgArea.innerHTML = `<div class="auth-alert alert-error">${err.message}</div>`;
+                return;
+              }
+            } else {
+              // Local demo user creation
+              authUser = {
+                id: 'sb-demo-' + Date.now(),
+                email,
+                user_metadata: { full_name: fullName, company_name: companyName }
+              };
+            }
+
+            // Sync user data to business details (ZERO FAKE DATA)
+            appState.business.name = companyName || 'My MSME Unit';
+            appState.business.ownerName = fullName;
+            appState.business.email = email;
+            persistState();
+
+            msgArea.innerHTML = `<div class="auth-alert alert-success">Account created for ${companyName}! Proceeding...</div>`;
+            setTimeout(() => window.terra.goToScreen(3), 600);
+          } else {
+            // Sign in
+            if (supabaseClient && isSbConfigured()) {
+              try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+                authUser = data.user;
+                if (data.user.user_metadata?.company_name) {
+                  appState.business.name = data.user.user_metadata.company_name;
+                }
+              } catch (err) {
+                msgArea.innerHTML = `<div class="auth-alert alert-error">${err.message}</div>`;
+                return;
+              }
+            } else {
+              authUser = {
+                id: 'sb-demo-' + Date.now(),
+                email,
+                user_metadata: { full_name: email.split('@')[0], company_name: appState.business.name || 'MSME Enterprise' }
+              };
+            }
+            appState.business.email = email;
+            persistState();
+            msgArea.innerHTML = `<div class="auth-alert alert-success">Signed in successfully! Proceeding...</div>`;
+            setTimeout(() => window.terra.goToScreen(8), 600);
+          }
+        },
+
+        handlePhoneAuth: function(e) {
+          e.preventDefault();
+          const phone = document.getElementById('inp-auth-phone').value.trim();
+          const msgArea = document.getElementById('auth-message-area');
+
+          if (!this.phoneOtpSent) {
+            this.phoneOtpSent = true;
+            msgArea.innerHTML = `<div class="auth-alert alert-info">Verification OTP sent to ${phone} (Demo Code: 123456).</div>`;
+            renderActiveScreen();
+          } else {
+            const otp = document.getElementById('inp-auth-otp').value.trim();
+            authUser = {
+              id: 'phone-user-' + Date.now(),
+              phone,
+              user_metadata: { full_name: 'Verified MSME Representative' }
+            };
+            appState.business.phone = phone;
+            persistState();
+            msgArea.innerHTML = `<div class="auth-alert alert-success">Phone verified successfully! Proceeding...</div>`;
+            setTimeout(() => window.terra.goToScreen(3), 600);
+          }
+        },
+
+        handleGoogleAuth: function() {
+          authUser = {
+            id: 'google-user-' + Date.now(),
+            email: 'msme.director@enterprise.com',
+            user_metadata: { full_name: 'Director (Verified Google Auth)', company_name: appState.business.name || 'Enterprise Unit' }
+          };
+          appState.business.email = authUser.email;
+          persistState();
+          window.terra.goToScreen(3);
+        },
+
+        signOut: function() {
+          if (supabaseClient) {
+            supabaseClient.auth.signOut().catch(() => {});
+          }
+          authUser = null;
+          tempId = 'TEMP-MSME-' + Math.floor(1000 + Math.random() * 9000);
+          persistState();
+          window.terra.goToScreen(2);
+        },
+
+        // Modal Helpers
+        openConfigModal: function() {
+          document.getElementById('sb-url').value = getStoredSbUrl();
+          document.getElementById('sb-key').value = getStoredSbKey();
+          document.getElementById('config-modal').style.display = 'flex';
+        },
+
+        closeConfigModal: function() {
+          document.getElementById('config-modal').style.display = 'none';
+        },
+
+        saveSupabaseConfig: function(e) {
+          e.preventDefault();
+          const u = document.getElementById('sb-url').value.trim();
+          const k = document.getElementById('sb-key').value.trim();
+          localStorage.setItem('terra_supabase_url', u);
+          localStorage.setItem('terra_supabase_key', k);
+          initSupabase();
+          this.closeConfigModal();
+          renderActiveScreen();
+          alert('Supabase credentials saved successfully!');
+        },
+
+        resetSupabaseDemo: function() {
+          localStorage.removeItem('terra_supabase_url');
+          localStorage.removeItem('terra_supabase_key');
+          supabaseClient = null;
+          this.closeConfigModal();
+          renderActiveScreen();
+        },
+
+        openSmartBillModal: function() {
+          document.getElementById('smart-bill-modal').style.display = 'flex';
+          document.getElementById('bill-analysis-result').style.display = 'none';
+        },
+
+        closeSmartBillModal: function() {
+          document.getElementById('smart-bill-modal').style.display = 'none';
+        },
+
+        fillBillPreset: function(type) {
+          const area = document.getElementById('smart-bill-input');
+          if (type === 'elec') area.value = 'Madhya Pradesh Power Discom Bill. Total units consumed: 12,000 kWh for spinning mill shopfloor.';
+          if (type === 'fuel') area.value = 'HPCL Commercial Diesel fuel delivery voucher: 450 Litres for backup DG genset.';
+          if (type === 'transport') area.value = 'Freight dispatch delivery log: 3,200 km for finished yarn delivery via Tata LCV.';
+          if (type === 'steel') area.value = 'Structural steel procurement challan: 4,000 kg Grade-A hot-rolled carbon steel coils.';
+        },
+
+        classifyBill: function() {
+          const text = document.getElementById('smart-bill-input').value.trim();
+          const resBox = document.getElementById('bill-analysis-result');
+          if (!text) return;
+
+          const numMatch = text.match(/([\d,]+(?:\.\d+)?)/);
+          const rawNum = numMatch ? parseFloat(numMatch[1].replace(/,/g, '')) : 1000;
+          const lower = text.toLowerCase();
+
+          let domain = 'Electricity';
+          let scope = 'Scope 2';
+          let factor = 0.7100;
+          let unit = 'kWh';
+
+          if (lower.includes('diesel') || lower.includes('fuel') || lower.includes('petrol') || lower.includes('lpg')) {
+            domain = 'Fuel';
+            scope = 'Scope 1';
+            factor = 2.6870;
+            unit = 'Litres';
+            appState.fuels = [{ id: 'fuel-bill', type: 'Diesel', quantity: rawNum, unit: 'Litres', period: 'Monthly' }];
+          } else if (lower.includes('km') || lower.includes('transport') || lower.includes('dispatch') || lower.includes('lcv')) {
+            domain = 'Transport';
+            scope = 'Scope 3';
+            factor = 0.2850;
+            unit = 'km';
+            appState.transport.distance_km = rawNum;
+          } else if (lower.includes('steel') || lower.includes('material') || lower.includes('cement')) {
+            domain = 'Materials';
+            scope = 'Scope 3';
+            factor = 1.8200;
+            unit = 'kg';
+            appState.materials = [{ id: 'mat-bill', type: 'Steel', quantity: rawNum, unit: 'kg', period: 'Monthly' }];
+          } else {
+            domain = 'Electricity';
+            scope = 'Scope 2';
+            factor = 0.7100;
+            unit = 'kWh';
+            appState.electricity.amount = rawNum;
+          }
+
+          const footprintTco2e = (rawNum * factor) / 1000;
+          persistState();
+
+          resBox.style.display = 'block';
+          resBox.innerHTML = `
+            <div class="auth-alert alert-success" style="flex-direction: column; align-items: flex-start;">
+              <strong>Auto-Classification Result:</strong>
+              <div>&bull; Detected Domain: <strong>${domain} (${scope})</strong></div>
+              <div>&bull; Extracted Quantity: <strong>${rawNum.toLocaleString()} ${unit}</strong></div>
+              <div>&bull; Statutory Factor: <strong>${factor} kg CO₂e/${unit}</strong></div>
+              <div>&bull; Calculated Emissions: <strong>${footprintTco2e.toFixed(3)} tCO₂e</strong></div>
+              <div style="font-size: 11px; margin-top: 4px; color: #166534;">✓ Successfully added to your active footprint!</div>
+            </div>
+          `;
+          renderActiveScreen();
+        },
+
+        // Sample demo loader (purely optional for fast preview)
+        loadDemoDataset: function() {
+          appState.business.name = 'Apex Precision Engineering Pvt Ltd';
+          appState.business.city = 'Peenya, Bengaluru';
+          appState.business.industry = 'Auto Ancillary & Components';
+          appState.business.employees = '65';
+          appState.electricity.amount = 12500;
+          appState.electricity.unit = 'kWh';
+          appState.electricity.period = 'Monthly';
+          appState.fuels = [{ id: 'fuel-1', type: 'Diesel', quantity: 450, unit: 'Litres', period: 'Monthly' }];
+          appState.transport.distance_km = 3200;
+          appState.transport.vehicle_type = 'Light Commercial Vehicle';
+          appState.materials = [{ id: 'mat-1', type: 'Steel', quantity: 4000, unit: 'kg', period: 'Monthly' }];
+          appState.waste = [{ id: 'waste-1', type: 'General Landfill Waste', quantity: 200, unit: 'kg', period: 'Monthly' }];
+          persistState();
+          alert('Loaded Apex Precision Engineering demo dataset!');
+          this.goToScreen(8);
+        },
+
+        downloadCsvReport: function() {
+          const fp = calculateFootprint();
+          const biz = appState.business;
+          let csv = 'TerraAI MSME Statutory Carbon Audit Ledger\n';
+          csv += `Enterprise Name,${biz.name || 'MSME Unit'}\n`;
+          csv += `Location,${biz.city || 'India'}\n`;
+          csv += `Reporting Period,${biz.reportingPeriod}\n`;
+          csv += `Session / Token ID,${tempId}\n\n`;
+          csv += 'Domain,Scope,Activity Amount,Statutory Standard,Emissions (tCO2e)\n';
+          csv += `Grid Electricity,Scope 2,${appState.electricity.amount} ${appState.electricity.unit},CEA India v21.0,${fp.scope2}\n`;
+          csv += `Direct Fuels,Scope 1,${appState.fuels.map(f => f.quantity + 'L ' + f.type).join('; ')},DEFRA / MoPNG,${fp.scope1}\n`;
+          csv += `Transport & Supply Chain,Scope 3,${appState.transport.distance_km} km; Materials; Waste,ARAI / CPCB,${fp.scope3}\n`;
+          csv += `NET TOTAL FOOTPRINT,Net Annual,,,${fp.total}\n`;
+
+          const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `TerraAI_Carbon_Audit_${(biz.name || 'MSME').replace(/\s+/g, '_')}.csv`;
+          a.click();
+          URL.revokeObjectURL(url);
+        },
+
+        printAuditReport: function() {
+          window.print();
+        }
+      };
+
+      // Set initial clock time
+      const clock = document.getElementById('status-clock');
+      if (clock) {
+        const now = new Date();
+        clock.textContent = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+      }
+
+      // Initial Mount
+      renderActiveScreen();
+    })();
+  </script>
+</body>
+</html>
